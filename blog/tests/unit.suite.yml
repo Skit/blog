@@ -1,0 +1,15 @@
+# Codeception Test Suite Configuration
+#
+# Suite for unit or integration tests.
+suite_namespace: blog\tests\unit
+actor: UnitTester
+modules:
+    enabled:
+        - Yii2:
+            part: [orm, email, fixtures]
+        - Asserts
+        - \Helper\Unit
+    config:
+        Yii2:
+          configFile: '../common/config/codeception-local.php'
+    step_decorators: ~

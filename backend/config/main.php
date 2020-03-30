@@ -1,4 +1,8 @@
 <?php
+
+use yii\bootstrap\BootstrapAsset;
+use yii\bootstrap\BootstrapPluginAsset;
+
 $params = array_merge(
     require __DIR__ . '/../../common/config/params.php',
     require __DIR__ . '/../../common/config/params-local.php',
@@ -37,14 +41,33 @@ return [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-        /*
+
+        'assetManager' => [
+            'bundles' => [
+               BootstrapAsset::class => [
+                    'sourcePath' => null,
+                    'baseUrl' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1',
+                    'css' => [
+                        'css/bootstrap.min.css'
+                    ],
+                ],
+                BootstrapPluginAsset::class => [
+                    'sourcePath' => null,
+                    'baseUrl' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1',
+                    'js' => [
+                        'js/bootstrap.min.js'
+                    ],
+                ],
+
+            ],
+        ],
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
             ],
         ],
-        */
+
     ],
     'params' => $params,
 ];
