@@ -6,22 +6,28 @@ use blog\entities\common\abstracts\BlogRecordAbstract;
 use blog\entities\common\Date;
 use blog\entities\post\exceptions\CommentException;
 use blog\entities\post\interfaces\CommentInterface;
+use blog\entities\relation\interfaces\AsRelation;
+use blog\entities\relation\interfaces\HasRelation;
+use blog\entities\relation\traits\AsRelationTrait;
+use blog\entities\relation\traits\HasRelationTrait;
 use blog\entities\user\User;
 use Exception;
 
 /**
+ * TODO вынести в отдельную папку
  * Class Comment
  * @package blog\entities\post
  */
-class Comment extends BlogRecordAbstract implements CommentInterface
+class Comment extends BlogRecordAbstract implements CommentInterface, HasRelation, AsRelation
 {
+    use AsRelationTrait, HasRelationTrait;
+
     private $parentComment;
     private $childComments;
 
     private $hashCode;
 
     /**
-     * @param int $id
      * @param string $content
      * @param User $creator
      * @param Comment $parentComment
@@ -29,7 +35,24 @@ class Comment extends BlogRecordAbstract implements CommentInterface
      * @return static
      * @throws CommentException
      */
-    public static function create(int $id, string $content, User $creator, ?Comment $parentComment, int $status): self
+    public static function create(string $content, User $creator, ?Comment $parentComment, int $status): self
+    {
+        return self::createFull(null, $content, $creator, $parentComment, (new Date())->getFormatted(), null, $status);
+    }
+
+    /**
+     * @param int|null $id
+     * @param string $content
+     * @param User $creator
+     * @param Comment|null $parentComment
+     * @param string $createdAt
+     * @param string|null $updatedAt
+     * @param int $status
+     * @return static
+     * @throws CommentException
+     */
+    public static function createFull(?int $id, string $content, User $creator, ?Comment $parentComment,
+                                      string $createdAt, ?string $updatedAt, int $status): self
     {
         try {
             $comment = new self();
@@ -40,7 +63,8 @@ class Comment extends BlogRecordAbstract implements CommentInterface
             // TODO вынести валидацию из сеттера?
             $comment->setContent($content);
             $comment->status = $status;
-            $comment->createdAt = (new Date())->getFormatted();
+            $comment->created_at = $createdAt;
+            $comment->created_at = $updatedAt;
 
             $comment->createHasCode();
 
@@ -67,7 +91,7 @@ class Comment extends BlogRecordAbstract implements CommentInterface
             // TODO вынести валидацию из сеттера?
             $this->setContent($content);
             $this->status = $status;
-            $this->updatedAt = (new Date())->getFormatted();
+            $this->updated_at = (new Date())->getFormatted();
 
             $this->createHasCode();
 
@@ -189,6 +213,11 @@ class Comment extends BlogRecordAbstract implements CommentInterface
      */
     public function getParent(): Comment
     {
-        return $this->parentComment;
+        return $this->parentComment ?? new Comment();
+    }
+
+    public function __set($name, $value)
+    {
+        $this->setRelationObject($name, $value);
     }
 }

@@ -47,7 +47,7 @@ class CommentEditTest extends Base
 
     public function testCommentHasOurParent()
     {
-        $comment = Comment::create(1,'Comment', $this->activeUser, null, Comment::STATUS_ACTIVE);
+        $comment = Comment::create('Comment', $this->activeUser, null, Comment::STATUS_ACTIVE);
 
         $this->expectExceptionMessage('Parent must be a different comment');
         $comment->edit('Edit', $comment, Comment::STATUS_ACTIVE);
@@ -55,7 +55,7 @@ class CommentEditTest extends Base
 
     public function testSaveHashCode()
     {
-        $comment = Comment::create(1, 'Comment', $this->activeUser, null, Comment::STATUS_ACTIVE);
+        $comment = Comment::create( 'Comment', $this->activeUser, null, Comment::STATUS_ACTIVE);
         $hasCode = $comment->getHashCode();
         $comment->edit('New text', null, Comment::STATUS_INACTIVE);
 

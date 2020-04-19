@@ -38,6 +38,7 @@ class CommentBundle extends RecursiveContentBundle
     }
 
     /**
+     * @deprecated
      * @param array $comments
      * @return array
      * @throws exceptions\CommentException
@@ -47,7 +48,7 @@ class CommentBundle extends RecursiveContentBundle
         $result = $allObject = [];
         foreach ($comments as $item) {
             $allObject += [
-                $item['id'] => Comment::create($item['id'], $item['text'], $item['creator'], null, $item['status'])
+                $item['id'] => Comment::create($item['text'], $item['creator'], null, $item['status'])
             ];
             $this->count++;
         }

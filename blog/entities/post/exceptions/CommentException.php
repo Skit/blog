@@ -1,7 +1,7 @@
 <?php
 namespace blog\entities\post\exceptions;
 
-class CommentException extends PostExceptionBlog
+class CommentException extends PostBlogException
 {
 
 }
