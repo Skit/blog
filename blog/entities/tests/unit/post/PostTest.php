@@ -4,7 +4,7 @@ namespace blog\entities\tests\unit\post;
 use blog\entities\category\Category;
 use blog\entities\common\Date;
 use blog\entities\common\MetaData;
-use blog\entities\post\MediaUrls;
+use blog\entities\post\PostBanners;
 use blog\entities\post\Post;
 use blog\entities\user\User;
 use Codeception\Stub;
@@ -24,21 +24,21 @@ class PostTest extends Unit
     /* @var $activeCategory User */
     private $activeCategory;
 
-    /* @var $hasImageMediaUrls MediaUrls */
+    /* @var $hasImageMediaUrls PostBanners */
     private $hasImageMediaUrls;
 
     public function setUp(): void
     {
         $this->activeCategory = Stub::make(Category::class, ['isActive' => true]);
         $this->activeUser = Stub::make(User::class, ['username' => 'Bob' ,'status' => User::STATUS_ACTIVE, 'id' => 1]);
-        $this->hasImageMediaUrls = Stub::make(MediaUrls::class, ['hasImage' => true]);
+        $this->hasImageMediaUrls = Stub::make(PostBanners::class, ['hasImage' => true]);
         parent::setUp();
     }
 
     public function testCreateFull()
     {
         $metaData = new MetaData('Some seo title', 'Some seo desc', 'Some seo keys');
-        $mediaUrls = (new MediaUrls())->setImageUrl('https://some.image/url')->setVideoUrl('https://some.video/url');
+        $mediaUrls = (new PostBanners())->setImageUrl('https://some.image/url')->setVideoUrl('https://some.video/url');
 
         $post = Post::create('Title', 'Slug', $mediaUrls, 'Some content',
             'Some preview',  $metaData, $this->activeCategory, $this->activeUser, Date::getFormatNow(), Post::STATUS_DRAFT);
@@ -46,8 +46,8 @@ class PostTest extends Unit
         $post->setBannerType(Post::BANNER_TYPE_VIDEO);
 
         expect($post->getTitle())->equals('Title');
-        expect($post->getMediaUrls()->getImageUrl())->equals('https://some.image/url');
-        expect($post->getMediaUrls()->getVideoUrl())->equals('https://some.video/url');
+        expect($post->getBanners()->getImageUrl())->equals('https://some.image/url');
+        expect($post->getBanners()->getVideoUrl())->equals('https://some.video/url');
         expect($post->getMetaData()->getTitle())->equals('Some seo title');
         expect($post->getMetaData()->getDescription())->equals('Some seo desc');
         expect($post->getMetaData()->getKeywords())->equals('Some seo keys');
@@ -59,20 +59,20 @@ class PostTest extends Unit
         $category = Stub::make(Category::class, ['isActive' => false]);
 
         $this->expectExceptionMessage('Categories must be active');
-        Post::create('Title', 'Slug', new MediaUrls(), 'Some content',
+        Post::create('Title', 'Slug', new PostBanners(), 'Some content',
             'Some preview', new MetaData(), $category, $this->activeUser, Date::getFormatNow(), Post::STATUS_DRAFT);
     }
 
     public function testCreateWithOutMediaUrls()
     {
         $this->expectExceptionMessage('Fail to create post with: Post require one url of an image or a video');
-        Post::create('Title', 'Slug', new MediaUrls(), 'Some content',
+        Post::create('Title', 'Slug', new PostBanners(), 'Some content',
             'Some preview', new MetaData(), $this->activeCategory, $this->activeUser, Date::getFormatNow(), Post::STATUS_DRAFT);
     }
 
     public function testCreateWithInactiveUser()
     {
-        $mediaUrls = Stub::make(MediaUrls::class, ['hasImageUrl' => true]);
+        $mediaUrls = Stub::make(PostBanners::class, ['hasImageUrl' => true]);
 
         $this->expectExceptionMessage('Fail to create post with: User must be active for this operation');
         Post::create('Title', 'Slug', $mediaUrls, 'Some content',
@@ -81,13 +81,13 @@ class PostTest extends Unit
 
     public function testEdit()
     {
-        $mediaUrls = (new MediaUrls())->setVideoUrl('https://some.video/url');
+        $mediaUrls = (new PostBanners())->setVideoUrl('https://some.video/url');
         $metaData = new MetaData('Some seo title', 'Some seo desc', 'Some seo keys');
 
         $post = Post::create('Title', 'Slug', $mediaUrls, 'Some content',
             'Some preview',  $metaData, $this->activeCategory, $this->activeUser, Date::getFormatNow(), Post::STATUS_DRAFT);
 
-        $mediaUrls = (new MediaUrls())->setImageUrl('https://edit.image/url')->setVideoUrl('https://edit.video/url');
+        $mediaUrls = (new PostBanners())->setImageUrl('https://edit.image/url')->setVideoUrl('https://edit.video/url');
         $metaData = new MetaData('Edit seo title', 'Edit seo desc', 'Edit seo keys');
 
         $post->setBannerType(Post::BANNER_TYPE_VIDEO);
@@ -98,8 +98,8 @@ class PostTest extends Unit
         $post->setBannerType(Post::BANNER_TYPE_IMAGE);
 
         expect($post->getTitle())->equals('Edit title');
-        expect($post->getMediaUrls()->getImageUrl())->equals('https://edit.image/url');
-        expect($post->getMediaUrls()->getVideoUrl())->equals('https://edit.video/url');
+        expect($post->getBanners()->getImageUrl())->equals('https://edit.image/url');
+        expect($post->getBanners()->getVideoUrl())->equals('https://edit.video/url');
         expect($post->getMetaData()->getTitle())->equals('Edit seo title');
         expect($post->getMetaData()->getDescription())->equals('Edit seo desc');
         expect($post->getMetaData()->getKeywords())->equals('Edit seo keys');
@@ -116,7 +116,7 @@ class PostTest extends Unit
 
     public function testImageUrl()
     {
-        $post = Stub::make(Post::class, ['mediaUrls' => (new MediaUrls())->setImageUrl('https://some.image/url')]);
+        $post = Stub::make(Post::class, ['mediaUrls' => (new PostBanners())->setImageUrl('https://some.image/url')]);
 
         $this->expectExceptionMessage('Post hasn`t a video url');
         $post->setBannerType(Post::BANNER_TYPE_VIDEO);
@@ -127,7 +127,7 @@ class PostTest extends Unit
 
     public function testImageVideo()
     {
-        $post = Stub::make(Post::class, ['mediaUrls' => (new MediaUrls())->setVideoUrl('https://some.video/url')]);
+        $post = Stub::make(Post::class, ['mediaUrls' => (new PostBanners())->setVideoUrl('https://some.video/url')]);
 
         $this->expectExceptionMessage('Post hasn`t an image url');
         $post->setBannerType(Post::BANNER_TYPE_IMAGE);

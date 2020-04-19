@@ -5,9 +5,13 @@ namespace blog\entities\post;
 use blog\entities\category\interfaces\CategoryInterface;
 use blog\entities\common\abstracts\BlogRecordAbstract;
 use blog\entities\common\Date;
+use blog\entities\common\exceptions\MetaDataExceptions;
+use blog\entities\common\interfaces\ContentBundleInterface;
 use blog\entities\common\MetaData;
-use blog\entities\post\exceptions\PostExceptionBlog;
+use blog\entities\post\exceptions\PostBlogException;
 use blog\entities\post\interfaces\PostInterface;
+use blog\entities\relation\interfaces\HasRelation;
+use blog\entities\relation\traits\HasRelationTrait;
 use blog\entities\tag\TagBundle;
 use blog\entities\user\User;
 use Closure;
@@ -19,21 +23,22 @@ use Exception;
  * Class Post
  * @package blog\entities\post
  */
-class Post extends BlogRecordAbstract implements PostInterface
+class Post extends BlogRecordAbstract implements PostInterface, HasRelation
 {
+    use HasRelationTrait;
+
     public const DEFAULT_COUNT_VIEW = 0;
     public const BANNER_TYPE_IMAGE = 1;
     public const BANNER_TYPE_VIDEO = 2;
-
     public const STATUS_DRAFT = 0;
 
     private $title;
     private $slug;
-    /* @var MediaUrls $mediaUrls */
-    private $mediaUrls;
+    /* @var PostBanners $post_banners */
+    private $post_banners;
     private $preview;
-    /* @var MetaData $metaData */
-    private $metaData;
+    /* @var MetaData|string $meta_data */
+    private $meta_data;
     private $category;
     /* @var $comments TagBundle */
     private $tags;
@@ -47,7 +52,7 @@ class Post extends BlogRecordAbstract implements PostInterface
     /**
      * @param string $title
      * @param string $slug
-     * @param MediaUrls $mediaUrls
+     * @param PostBanners $mediaUrls
      * @param string $content
      * @param string $preview
      * @param MetaData $metaData
@@ -56,9 +61,9 @@ class Post extends BlogRecordAbstract implements PostInterface
      * @param string $published_at
      * @param int $status
      * @return Post
-     * @throws PostExceptionBlog
+     * @throws PostBlogException
      */
-    public static function create(string $title, string $slug, MediaUrls $mediaUrls, string $content, string $preview,
+    public static function create(string $title, string $slug, PostBanners $mediaUrls, string $content, string $preview,
                                   MetaData $metaData, CategoryInterface $category, User $creator, string $published_at, int $status)
     {
         try {
@@ -69,16 +74,16 @@ class Post extends BlogRecordAbstract implements PostInterface
             $post->slug = $slug;
             $post->content = $content;
             $post->preview = $preview;
-            $post->metaData = $metaData;
+            $post->meta_data = $metaData;
             $post->setCategory($category);
-            $post->setMediaUrls($mediaUrls);
+            $post->setPostBanners($mediaUrls);
             $post->user = $creator;
-            $post->createdAt = (new Date())->getFormatted();
+            $post->created_at = (new Date())->getFormatted();
             $post->publishedAt = (new Date($published_at))->getFormatted();
             $post->status = $status;
             $post->countView = static::DEFAULT_COUNT_VIEW;
         } catch (Exception $e) {
-            throw new PostExceptionBlog("Fail to create post with: {$e->getMessage()}", 0, $e);
+            throw new PostBlogException("Fail to create post with: {$e->getMessage()}", 0, $e);
         }
 
         return $post;
@@ -87,42 +92,42 @@ class Post extends BlogRecordAbstract implements PostInterface
     /**
      * @param string $title
      * @param string $slug
-     * @param MediaUrls $mediaUrls
+     * @param PostBanners $mediaUrls
      * @param string $content
      * @param string $preview
      * @param MetaData $metaData
      * @param CategoryInterface $category
      * @param string $published_at
      * @param int $status
-     * @throws PostExceptionBlog
+     * @throws PostBlogException
      */
-    public function edit(string $title, string $slug, MediaUrls $mediaUrls, string $content, string $preview,
+    public function edit(string $title, string $slug, PostBanners $mediaUrls, string $content, string $preview,
                          MetaData $metaData, CategoryInterface $category, string $published_at, int $status)
     {
         try {
             $this->title = $title;
             $this->slug = $slug;
-            $this->setMediaUrls($mediaUrls);
+            $this->setPostBanners($mediaUrls);
             $this->content = $content;
             $this->preview = $preview;
             $this->setCategory($category);
-            $this->metaData = $metaData;
-            $this->updatedAt = (new Date())->getFormatted();
+            $this->meta_data = $metaData;
+            $this->updated_at = (new Date())->getFormatted();
             $this->publishedAt = (new Date($published_at))->getFormatted();
             $this->status = $status;
         } catch (Exception $e) {
-            throw new PostExceptionBlog("Fail to update post with: {$e->getMessage()}", 0, $e);
+            throw new PostBlogException("Fail to update post with: {$e->getMessage()}", 0, $e);
         }
     }
 
     /**
      * @param CommentBundle $commentBundle
-     * @throws PostExceptionBlog
+     * @throws PostBlogException
      */
     public function setComments(CommentBundle $commentBundle): void
     {
         if (!$this->isActive()) {
-            throw new PostExceptionBlog('Post must be active');
+            throw new PostBlogException('Post must be active');
         }
 
         $this->comments = $commentBundle;
@@ -139,23 +144,23 @@ class Post extends BlogRecordAbstract implements PostInterface
     /**
      * TODO возможно стоит сделать объект banner
      * @param int $bannerType
-     * @throws PostExceptionBlog
+     * @throws PostBlogException
      */
     public function setBannerType(int $bannerType): void
     {
         switch ($bannerType) {
             case static::BANNER_TYPE_IMAGE:
-                if (!$this->mediaUrls->hasImageUrl()) {
-                    throw new PostExceptionBlog('Post hasn`t an image url');
+                if (!$this->post_banners->hasImageUrl()) {
+                    throw new PostBlogException('Post hasn`t an image url');
                 }
                 break;
             case static::BANNER_TYPE_VIDEO:
-                if (!$this->mediaUrls->hasVideoUrl()) {
-                    throw new PostExceptionBlog('Post hasn`t a video url');
+                if (!$this->post_banners->hasVideoUrl()) {
+                    throw new PostBlogException('Post hasn`t a video url');
                 }
                 break;
             default:
-                throw new PostExceptionBlog('Unknown banner type');
+                throw new PostBlogException('Unknown banner type');
                 break;
         }
 
@@ -164,37 +169,37 @@ class Post extends BlogRecordAbstract implements PostInterface
 
     /**
      * @param CategoryInterface $category
-     * @throws PostExceptionBlog
+     * @throws PostBlogException
      */
     public function setCategory(CategoryInterface $category)
     {
         if (!$category->isActive()) {
-            throw new PostExceptionBlog('Categories must be active');
+            throw new PostBlogException('Categories must be active');
         }
 
         $this->category = $category;
     }
 
     /**
-     * @param TagBundle $tagBundle
-     * @throws PostExceptionBlog
+     * @param ContentBundleInterface $tagBundle
+     * @throws PostBlogException
      */
-    public function setTags(TagBundle $tagBundle): void
+    public function setTags(ContentBundleInterface $tagBundle): void
     {
         if (!$this->isActive()) {
-            throw new PostExceptionBlog('Post must be active');
+            throw new PostBlogException('Post must be active');
         }
 
         $this->tags = $tagBundle;
     }
 
     /**
-     * @throws PostExceptionBlog
+     * @throws PostBlogException
      */
     public function draft(): void
     {
         if ($this->status === static::STATUS_DRAFT) {
-            throw new PostExceptionBlog('Post is already draft');
+            throw new PostBlogException('Post is already draft');
         }
 
         $this->status = static::STATUS_DRAFT;
@@ -213,20 +218,20 @@ class Post extends BlogRecordAbstract implements PostInterface
      */
     public function isHighlight(): bool
     {
-        return $this->isHighlight;
+        return $this->isHighlight ?? false;
     }
 
     /**
-     * @param MediaUrls $mediaUrls
-     * @throws PostExceptionBlog
+     * @param PostBanners $post_banners
+     * @throws PostBlogException
      */
-    public function setMediaUrls(MediaUrls $mediaUrls): void
+    public function setPostBanners(PostBanners $post_banners): void
     {
-        if (!$mediaUrls->hasImageUrl() && !$mediaUrls->hasVideoUrl()) {
-            throw new PostExceptionBlog('Post require one url of an image or a video');
+        if (!$post_banners->hasImageUrl() && !$post_banners->hasVideoUrl()) {
+            throw new PostBlogException('Post require one url of an image or a video');
         }
 
-        $this->mediaUrls = $mediaUrls;
+        $this->post_banners = $post_banners;
     }
 
     /**
@@ -246,11 +251,15 @@ class Post extends BlogRecordAbstract implements PostInterface
     }
 
     /**
-     * @return MediaUrls
+     * @return PostBanners
      */
-    public function getMediaUrls(): MediaUrls
+    public function getBanners(): PostBanners
     {
-        return $this->mediaUrls;
+        if (is_string($this->post_banners)) {
+            $this->post_banners = PostBanners::fillByJson($this->post_banners);
+        }
+
+        return $this->post_banners;
     }
 
     /**
@@ -263,10 +272,15 @@ class Post extends BlogRecordAbstract implements PostInterface
 
     /**
      * @return MetaData
+     * @throws MetaDataExceptions
      */
     public function getMetaData(): MetaData
     {
-        return $this->metaData;
+        if (is_string($this->meta_data)) {
+            $this->meta_data = MetaData::fillByJson($this->meta_data);
+        }
+
+        return $this->meta_data;
     }
 
     /**
@@ -288,7 +302,7 @@ class Post extends BlogRecordAbstract implements PostInterface
     /**
      * @return TagBundle|null
      */
-    public function getTags(): ?TagBundle
+    public function getTags(): ?ContentBundleInterface
     {
         return $this->tags;
     }
@@ -331,5 +345,14 @@ class Post extends BlogRecordAbstract implements PostInterface
     public function getBannerType()
     {
         return $this->bannerType;
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     */
+    public function __set($name, $value)
+    {
+        $this->setRelationObject($name, $value);
     }
 }

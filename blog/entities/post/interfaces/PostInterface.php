@@ -2,8 +2,9 @@
 
 namespace blog\entities\post\interfaces;
 
+use blog\entities\common\interfaces\ContentBundleInterface;
 use blog\entities\post\CommentBundle;
-use blog\entities\post\MediaUrls;
+use blog\entities\post\PostBanners;
 use blog\entities\tag\TagBundle;
 use Closure;
 
@@ -13,13 +14,13 @@ use Closure;
  */
 interface PostInterface
 {
-    public function setMediaUrls(MediaUrls $mediaUrls): void;
+    public function setPostBanners(PostBanners $mediaUrls): void;
 
     public function hasPreview(): bool;
 
     public function setComments(CommentBundle $commentBundle): void;
 
-    public function setTags(TagBundle $tagBundle): void;
+    public function setTags(ContentBundleInterface $tagBundle): void;
 
     public function setBannerType(int $bannerType): void;
 
@@ -27,7 +28,7 @@ interface PostInterface
 
     public function isHighlight(): bool;
 
-    public function getTags(): ?TagBundle;
+    public function getTags(): ?ContentBundleInterface;
 
     public function getComments(): ?CommentBundle;
 

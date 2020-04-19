@@ -43,7 +43,7 @@ class MetaData implements JsonSerializable
             try {
                 return new self($json['title'], $json['description'], $json['keywords']);
             } catch (Exception $e) {
-                throw new MetaDataExceptions('Fail to set data from json', HttpCode::INTERNAL_SERVER_ERROR, $e);
+                throw new MetaDataExceptions('Fail to set data from json', 0, $e);
             }
         }
 
@@ -80,7 +80,8 @@ class MetaData implements JsonSerializable
      */
     public function __toString()
     {
-        return json_encode($this, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        //TODO JSON_THROW_ON_ERROR is available php >= 7.3 (JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        return json_encode($this,  JSON_UNESCAPED_UNICODE);
     }
 
     /**
