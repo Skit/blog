@@ -4,6 +4,7 @@
 namespace blog\entities\common\abstracts;
 
 
+use blog\entities\common\abstracts\bundles\ContentBundleAbstract;
 use blog\entities\common\RecursiveContentBundle;
 use RecursiveIterator;
 

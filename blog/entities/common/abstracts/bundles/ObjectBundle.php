@@ -1,21 +1,17 @@
 <?php
 
 
-namespace blog\entities\common\abstracts;
+namespace blog\entities\common\abstracts\bundles;
 
 
-use blog\entities\common\interfaces\ContentBundleInterface;
 use blog\entities\common\interfaces\ContentObjectInterface;
 
 /**
- * Class ContentBundleAbstract
- * @package blog\entities\common\abstracts
+ * Class ObjectBundle
+ * @package blog\entities\common\abstracts\bundles
  */
-abstract class ContentBundleAbstract implements ContentBundleInterface
+abstract class ObjectBundle extends ContentBundleAbstract
 {
-    protected $count = 0;
-    protected $bundle = [];
-
     /**
      * @param int $pk
      * @return bool
@@ -48,21 +44,5 @@ abstract class ContentBundleAbstract implements ContentBundleInterface
         }
 
         return null;
-    }
-
-    /**
-     * @return array
-     */
-    public function getBundle(): array
-    {
-        return $this->bundle;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCount(): int
-    {
-        return $this->count;
     }
 }

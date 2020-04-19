@@ -20,17 +20,17 @@ abstract class ContentObjectAbstract implements ContentObjectInterface
     protected $id;
     /* @var $status integer */
     protected $status;
-    /* @var $createdAt string */
-    protected $createdAt;
-    /* @var $updatedAt string */
-    protected $updatedAt;
+    /* @var $created_at string */
+    protected $created_at;
+    /* @var $updated_at string */
+    protected $updated_at;
 
     /**
      * @return string
      */
     public function getCreatedAt(): string
     {
-        return $this->createdAt;
+        return $this->created_at;
     }
 
     /**
@@ -38,7 +38,7 @@ abstract class ContentObjectAbstract implements ContentObjectInterface
      */
     public function getUpdatedAt(): ?string
     {
-        return $this->updatedAt;
+        return $this->updated_at;
     }
 
     /**
