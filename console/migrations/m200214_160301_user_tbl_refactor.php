@@ -19,6 +19,8 @@ class m200214_160301_user_tbl_refactor extends Migration
             $this->timestamp()->notNull()->defaultExpression('CURRENT_TIMESTAMP'));
 
         $this->alterColumn('user', 'updated_at', $this->timestamp());
+
+        $this->renameTable('user', 'users');
     }
 
     /**
@@ -26,8 +28,8 @@ class m200214_160301_user_tbl_refactor extends Migration
      */
     public function safeDown()
     {
+        $this->renameTable('users', 'user');
         $this->dropColumn('user', 'role');
-        $this->alterColumn('user', 'id', $this->primaryKey());
         $this->alterColumn('user', 'created_at', $this->integer(11)->notNull());
         $this->alterColumn('user', 'updated_at', $this->integer(11)->notNull());
     }

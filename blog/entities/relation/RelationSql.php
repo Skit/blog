@@ -2,6 +2,7 @@
 
 namespace blog\entities\relation;
 
+use blog\entities\relation\exceptions\RelationException;
 use blog\entities\relation\interfaces\AsRelation;
 
 /**
@@ -77,9 +78,15 @@ class RelationSql
      * @param string $alias
      * @param string $className
      * @return $this
+     * @throws RelationException
      */
-    public function classAlias(string $alias, string $className): RelationSql
+    public function withClass(string $alias, string $className): RelationSql
     {
+        if (!method_exists($className, 'createForRelation')) {
+            throw new RelationException("You must use AsRelation trait and implementing AsRelation in {$className}");
+        }
+
+        // TODO проверку на не существующий алиас. алиас может отсутствовать, тогда currentClass = null
         if (preg_match( "~(?:{$alias}\.\`?\w+\`?).*(?=from)~i", $this->sql, $selectSection)) {
             $selectTemplate = '{select}';
             $this->currentClass = str_replace('\\', '/', $className);
@@ -100,10 +107,10 @@ class RelationSql
      * @param string $className
      * @return $this
      */
-    public function has(string $alias, string $className)
+    public function thatHas(string $alias, string $className)
     {
         $parent = $this->currentClass;
-        $this->classAlias($alias, $className);
+        $this->withClass($alias, $className);
         $this->sql = str_replace($this->currentClass, "{$parent}+{$this->currentClass}", $this->sql);
 
         return $this;
