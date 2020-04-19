@@ -3,41 +3,32 @@
 namespace blog\entities\tag;
 
 
-use blog\entities\common\abstracts\ContentBundleAbstract;
+use blog\entities\common\abstracts\bundles\ObjectBundle;
 use blog\entities\tag\exceptions\TagException;
 use Exception;
 
 /**
+ * TODO поменять исключение на BundleException
  * Class TagBundle
  *
  * @property Tag[] $bundle
  * @package blog\entities\tag
  */
-class TagBundle extends ContentBundleAbstract
+class TagBundle extends ObjectBundle
 {
     /**
      * TagBundle constructor.
      * @param array $tags
      * @throws TagException
      */
-    public function __construct(array $tags)
-    {
-        $this->createBundle($tags);
-    }
-
-    /**
-     * @param array $tags
-     * @throws TagException
-     */
-    private function createBundle(array $tags): void
+    public function __construct(array $tags = [])
     {
         try {
-            foreach ($tags as $tag) {
-                $this->bundle[] = Tag::create($tag['id'], $tag['title'], $tag['slug'], $tag['status']);
-                $this->count++;
-            }
+            $this->createBundle(function ($tag) {
+                return Tag::createFull($tag['id'], $tag['title'], $tag['slug'], 0, '', null, $tag['status']);
+            }, $tags);
         } catch (Exception $e) {
-            throw new TagException("Fail to create tag bundle with: {$e->getMessage()}", 0, $e);
+            throw new TagException("Fail to create tag bundle: {$e->getMessage()}", 0, $e);
         }
     }
 }

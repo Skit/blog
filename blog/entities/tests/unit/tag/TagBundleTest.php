@@ -5,6 +5,7 @@ use blog\entities\tag\TagBundle;
 use Codeception\Test\Unit;
 
 /**
+ * TODO починить тесты
  * Class TagBundleTest
  */
 class TagBundleTest extends Unit

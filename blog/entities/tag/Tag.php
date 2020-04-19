@@ -18,23 +18,41 @@ class Tag extends ContentObjectAbstract
     private $frequency;
 
     /**
-     * @param int $id
+     * @param int|null $pk
+     * @param string $title
+     * @param string $slug
+     * @param int $frequency
+     * @param string $created_at
+     * @param string|null $updated_at
+     * @param int $status
+     * @return Tag
+     */
+    public static function createFull(?int $pk, string $title, string $slug, ?int $frequency,
+                                      ?string $created_at, ?string $updated_at, int $status)
+    {
+        $tag = new self;
+        $tag->id = $pk;
+        $tag->title = $title;
+        $tag->slug = $slug;
+        $tag->frequency = $frequency;
+        $tag->created_at = $created_at ?? (new Date())->getFormatted();
+        $tag->updated_at = $updated_at;
+        $tag->status = $status;
+
+        return $tag;
+    }
+
+    /**
      * @param string $title
      * @param string $slug
      * @param int $status
      * @return Tag
      * @throws TagException
      */
-    public static function create(int $id, string $title, string  $slug, int $status)
+    public static function create(string $title, string  $slug, int $status): Tag
     {
         try {
-            $tag = new self;
-            $tag->id = $id;
-            $tag->title = $title;
-            $tag->slug = $slug;
-            $tag->frequency = 0;
-            $tag->createdAt = (new Date())->getFormatted();
-            $tag->status = $status;
+            $tag = self::createFull(null, $title, $slug, null, null, null, $status);
         } catch (Exception $e) {
             throw new TagException("Fail to create the tag with: {$e->getMessage()}", 0, $e);
         }
@@ -46,14 +64,15 @@ class Tag extends ContentObjectAbstract
      * @param string $title
      * @param string $slug
      * @param int $status
+     *
      * @throws TagException
      */
-    public function edit(string $title, string  $slug, int $status)
+    public function edit(string $title, string  $slug, int $status): void
     {
         try {
             $this->title = $title;
             $this->slug = $slug;
-            $this->updatedAt = (new Date())->getFormatted();
+            $this->updated_at = (new Date())->getFormatted();
             $this->status = $status;
         } catch (Exception $e) {
             throw new TagException("Fail to edit the tag with: {$e->getMessage()}", 0, $e);
@@ -81,6 +100,6 @@ class Tag extends ContentObjectAbstract
      */
     public function getFrequency(): int
     {
-        return $this->frequency;
+        return (int) $this->frequency;
     }
 }

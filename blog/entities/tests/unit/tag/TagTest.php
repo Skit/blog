@@ -9,7 +9,7 @@ class TagTest extends Unit
 
     public function testCreate()
     {
-        $tag = Tag::create(1, 'Title', 'Slug', Tag::STATUS_ACTIVE);
+        $tag = Tag::create('Title', 'Slug', Tag::STATUS_ACTIVE);
 
         expect($tag->getTitle())->equals('Title');
         expect($tag->getSlug())->equals('Slug');
