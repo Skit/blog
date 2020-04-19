@@ -8,6 +8,7 @@ use Exception;
 
 /**
  * TODO написать тесты
+ * TODO Напсать статические методы, возвращающие дату
  * Class Date
  * @package blog\entities\common
  */
@@ -38,11 +39,17 @@ class Date
         $this->date->setTimezone(new DateTimeZone($timeZone ?? static::DEFAULT_TIMEZONE));
     }
 
+    /**
+     * @return string
+     */
     public function getFormatted(): string
     {
         return $this->date->format(static::RETURN_FORMAT);
     }
 
+    /**
+     * @return int
+     */
     public function getTimestamp(): int
     {
         return $this->date->getTimestamp();
