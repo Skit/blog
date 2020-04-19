@@ -48,7 +48,7 @@ class User extends ContentObjectAbstract implements UserInterface, AsRelation, H
         $user->email = $email;
         $user->role = $role;
         $user->status = static::STATUS_INACTIVE;
-        $user->createdAt = Date::getFormatNow();
+        $user->created_at = Date::getFormatNow();
 
         return $user;
     }
@@ -63,7 +63,7 @@ class User extends ContentObjectAbstract implements UserInterface, AsRelation, H
         $this->username = $username;
         $this->email = $email;
         $this->role = $role;
-        $this->updatedAt = Date::getFormatNow();
+        $this->updated_at = Date::getFormatNow();
     }
 
     /**

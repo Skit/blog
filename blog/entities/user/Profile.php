@@ -7,6 +7,7 @@ use blog\entities\relation\interfaces\AsRelation;
 use blog\entities\relation\traits\AsRelationTrait;
 
 /**
+ * TODO Отнаследовать от абстрактного контент класса
  * Class Profile
  * @package blog\entities\user
  */
