@@ -69,7 +69,7 @@ class CategoryFindTest extends Unit
     public function testActive()
     {
         $this->fc = $this->tester->grabFixture('active', 1);
-        $category = $this->repository->getOneById($this->fc->id);
+        $category = $this->repository->findOneById($this->fc->id, Category::STATUS_ACTIVE);
 
         expect($category)->isInstanceOf(Category::class);
         expect($category->getMetaData()->getTitle())->equals($this->fc->meta_data['title']);
@@ -80,6 +80,6 @@ class CategoryFindTest extends Unit
         $this->fc = $this->tester->grabFixture('inactive', 0);
 
         $this->expectException(RepositoryException::class);
-        $this->repository->getOneActiveById($this->fc->id);
+        $this->repository->findOneById($this->fc->id, Category::STATUS_ACTIVE);
     }
 }

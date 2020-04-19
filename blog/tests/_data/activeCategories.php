@@ -9,7 +9,7 @@ return  [
         'title' => 'test category 1',
         'creator_id' => 1,
         'slug' => 'test_category 1',
-        'description' => 'description 1',
+        'content' => 'description 1',
         'meta_data' => null,
         'status' => Category::STATUS_ACTIVE,
     ],
@@ -17,7 +17,7 @@ return  [
         'title' => 'test category 2',
         'creator_id' => 1,
         'slug' => 'test_category 2',
-        'description' => 'description 2',
+        'content' => 'description 2',
         'meta_data' => new MetaData('Сева тайтл', 'Сева описание', 'Сева ключевые'),
         'status' => Category::STATUS_ACTIVE,
     ]

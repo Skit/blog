@@ -58,10 +58,11 @@ class CategoryCreateTest extends Unit
         ]);
     }
 
+    // TODO вынести в другой тест класс
     public function testRelation()
     {
         /* @var $category Category */
-        $category = $this->repository->getOneById(1);
+        $category = $this->repository->findOneById(1, Category::STATUS_ACTIVE);
 
         expect($category->getCreator()->getUserName())->notNull();
         expect($category->getCreator()->getProfile()->getBio())->notNull();
@@ -79,7 +80,7 @@ class CategoryCreateTest extends Unit
         $createForm->meta_description = $this->faker->text();
 
         $user = $this->tester->grabFixture('user', 0);
-        $user = $this->userRepository->getOneById($user->id);
+        $user = $this->userRepository->findOneById($user->id, Category::STATUS_ACTIVE);
 
         $category = $this->manager->create($user, $createForm);
 
@@ -99,7 +100,7 @@ class CategoryCreateTest extends Unit
         $createForm->status = Category::STATUS_ACTIVE;
 
         $user = $this->tester->grabFixture('user', 0);
-        $user = $this->userRepository->getOneById($user->id);
+        $user = $this->userRepository->findOneById($user->id, Category::STATUS_ACTIVE);
 
         $category = $this->manager->create($user, $createForm);
 
@@ -115,7 +116,7 @@ class CategoryCreateTest extends Unit
         $createForm->status = Category::STATUS_INACTIVE;
 
         $user = $this->tester->grabFixture('user', 0);
-        $user = $this->userRepository->getOneById($user->id);
+        $user = $this->userRepository->findOneById($user->id, Category::STATUS_ACTIVE);
 
         $category = $this->manager->create($user, $createForm);
 

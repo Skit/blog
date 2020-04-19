@@ -4,8 +4,7 @@ namespace blog\managers;
 
 use backend\models\CategoriesForm;
 use blog\entities\category\Category;
-use blog\entities\category\exceptions\CategoryException;
-use blog\entities\common\abstracts\HasRelation;
+use blog\entities\common\exceptions\BlogRecordsException;
 use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\user\User;
 use blog\repositories\category\CategoriesRepository;
@@ -35,7 +34,9 @@ class CategoryManager
      * @param User $creator
      * @param CategoriesForm $model
      * @return Category
-     * @throws CategoryException
+     * @throws MetaDataExceptions
+     * @throws RepositoryException
+     * @throws BlogRecordsException
      */
     public function create(User $creator, CategoriesForm $model): Category
     {
@@ -48,19 +49,22 @@ class CategoryManager
             $model->status
         );
 
-        return $this->repository->create($category);
+        $category->setPrimaryKey($this->repository->create($category));
+
+        return $category;
     }
 
     /**
-     * @param int $id
+     * @param $category
      * @param CategoriesForm $model
      * @return Category
-     * @throws RepositoryException
-     * @throws MetaDataExceptions
+     * @throws \yii\db\Exception
      */
-    public function edit(int $id, CategoriesForm $model): Category
+    public function edit($category, CategoriesForm $model): Category
     {
-        $category = $this->repository->getOneById($id);
+        // FIXME если вернет bool выкинуть 404
+        // FIXME фикстуры в тестах возвращают экземпляр модели, переделать, чтобы сюда попадал экземпляр категории
+        $category = $this->repository->findOneById($category->id, $category->status);
         $category->edit($model->title, $model->slug, $model->description, $this->service->setMetaData($model), $model->status);
         $this->repository->update($category);
 

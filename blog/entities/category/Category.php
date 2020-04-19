@@ -8,17 +8,20 @@ use blog\entities\common\Date;
 use blog\entities\common\exceptions\BlogRecordsException;
 use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\common\MetaData;
+use blog\entities\relation\interfaces\AsRelation;
 use blog\entities\relation\interfaces\HasRelation;
+use blog\entities\relation\traits\AsRelationTrait;
 use blog\entities\relation\traits\HasRelationTrait;
 use blog\entities\user\User;
 
 /**
  * Class Categories
  * @package blog\entities\category
+ * TODO переименовать поля согласно именам полей в БД
  */
-class Category extends BlogRecordAbstract implements CategoryInterface, HasRelation
+class Category extends BlogRecordAbstract implements CategoryInterface, HasRelation, AsRelation
 {
-    use HasRelationTrait;
+    use HasRelationTrait, AsRelationTrait;
 
     private $title;
     private $slug;
@@ -44,7 +47,7 @@ class Category extends BlogRecordAbstract implements CategoryInterface, HasRelat
         $category->slug = $slug;
         $category->content = $content;
         $category->user = $creator;
-        $category->createdAt = Date::getFormatNow();
+        $category->created_at = Date::getFormatNow();
         $category->status = $status;
 
         return $category;
@@ -57,14 +60,14 @@ class Category extends BlogRecordAbstract implements CategoryInterface, HasRelat
      * @param MetaData $metaData
      * @param int $status
      */
-    public function edit(string $title, string $slug, string $content, MetaData $metaData, int $status)
+    public function edit(string $title, string $slug, string $content, MetaData $metaData, int $status): void
     {
         $this->title = $title;
         $this->slug = $slug;
         $this->content = $content;
         $this->meta_data = $metaData;
         $this->status = $status;
-        $this->updatedAt = Date::getFormatNow();
+        $this->updated_at = Date::getFormatNow();
     }
 
     /**

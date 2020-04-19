@@ -15,6 +15,7 @@ use yii\base\Model;
  * @property string $created_at
  * @property string|null $updated_at
  * @property int $status
+ * TODO переименовать в единственное число
  */
 class CategoriesForm extends Model
 {

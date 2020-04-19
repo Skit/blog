@@ -63,7 +63,7 @@ class CategoryEditTest extends Unit
         $editForm->description = $this->fc->description;
         $editForm->status = $this->fc->status;
 
-        $category = $this->manager->edit($this->fc->id, $editForm);
+        $category = $this->manager->edit($this->fc, $editForm);
         expect($this->fc->updated_at)->null();
         expect($updatedTimeTest)->lessOrEquals(strtotime($category->getUpdatedAt()));
     }
@@ -81,7 +81,7 @@ class CategoryEditTest extends Unit
         $editForm->meta_description = 'seo d';
         $editForm->meta_keywords = 'seo k';
 
-        $category = $this->manager->edit($this->fc->id, $editForm);
+        $category = $this->manager->edit($this->fc, $editForm);
 
         expect($category->getMetaData()->getTitle())->equals('seo t');
         expect($category->getMetaData()->getDescription())->equals('seo d');
@@ -98,7 +98,7 @@ class CategoryEditTest extends Unit
         $editForm->description = $description = uniqid('d');
         $editForm->status = Category::STATUS_INACTIVE;
 
-        $category = $this->manager->edit($this->fc->id, $editForm);
+        $category = $this->manager->edit($this->fc, $editForm);
 
         expect($category->getTitle())->equals($title);
         expect($category->getSlug())->equals($slug);
@@ -116,7 +116,7 @@ class CategoryEditTest extends Unit
         $editForm->description = $this->fc->description;
         $editForm->status = Category::STATUS_ACTIVE;
 
-        $category = $this->manager->edit($this->fc->id, $editForm);
+        $category = $this->manager->edit($this->fc, $editForm);
 
         expect($category->isActive())->true();
     }
