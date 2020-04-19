@@ -12,7 +12,6 @@ use yii\db\Connection;
  */
 class MConnection extends Connection
 {
-
     /**
      * @param RelationSql $relationSql
      * @param array $params

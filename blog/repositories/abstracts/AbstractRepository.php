@@ -2,69 +2,75 @@
 
 namespace blog\repositories\abstracts;
 
+use blog\entities\common\interfaces\ContentObjectInterface;
+use blog\entities\common\RepositoryChecker;
 use blog\repositories\exceptions\RepositoryException;
-use blog\repositories\interfaces\DAORepositoryInterface;
-use common\components\MConnection;
-use Exception;
-use yii\db\Command;
+use blog\repositories\interfaces\CRUDRepositoryInterface;
+use Closure;
+use PDO;
 
 /**
  * Class AbstractRepository
- * @property MConnection $dao
  *
  * @package blog\repositories\abstracts
  */
-class AbstractRepository implements DAORepositoryInterface
+abstract class AbstractRepository extends AbstractDAO implements CRUDRepositoryInterface
 {
-    protected $dao;
-    protected $className;
-
     /**
-     * AbstractRepository constructor.
-     * @param MConnection $dao
+     * @var string $class
      */
-    public function __construct(MConnection $dao)
-    {
-        $this->dao = $dao;
-    }
-
+    protected $class;
     /**
-     * @param Command $command
-     * @return int
-     * @throws RepositoryException
+     * Name of database table
+     * @var string $table
      */
-    public function execute(Command $command): int
-    {
-        try {
-            $rowAffected = $command->execute();
-        } catch (Exception $exception) {
-            throw new RepositoryException(
-                "Unable to execute:\n{$exception->getMessage()}", 0, $exception);
-        }
-
-        return $rowAffected;
-    }
+    protected $table;
 
     /**
-     * @param Command $command
      * @param int $id
+     * @param int $status
      * @return mixed
+     */
+    public function findOneById(int $id, int $status): ContentObjectInterface
+    {
+        return $this->dao
+            ->createCommand("SELECT * FROM `{$this->table()}` WHERE `id`=:id AND `status`=:status LIMIT 1")
+            ->bindValue(':id', $id, PDO::PARAM_INT)
+            ->bindValue(':status', $status, PDO::PARAM_INT)
+            ->fetchOneObject($this->getClassName());
+    }
+
+    /**
+     * @param Closure $closure
+     * @return RepositoryChecker
      * @throws RepositoryException
      */
-    protected function fetchOne(Command $command)
+    protected function checker(Closure $closure)
     {
-        if (!($record = $command->fetchObject($this->getClassName()))) {
-            throw new RepositoryException("Record is not found");
-        }
-
-        return $record;
+        return RepositoryChecker::run($closure);
     }
 
     /**
      * @return string
      */
-    public function getClassName(): string
+    protected function getClassName(): string
     {
-        return $this->className;
+        if (!$this->class) {
+            throw new RepositoryException('Determine property $class in your repository class');
+        }
+
+        return $this->class;
+    }
+
+    /**
+     * @return string
+     */
+    protected function table(): string
+    {
+        if (!$this->table) {
+            throw new RepositoryException('Determine property $table in your repository class');
+        }
+
+        return $this->table;
     }
 }
