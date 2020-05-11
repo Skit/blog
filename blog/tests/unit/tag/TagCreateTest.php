@@ -53,8 +53,8 @@ class TagCreateTest extends Unit
         $this->specify('One from string form', function() {
             $bundle = new ArrayTagBundle('первый, второй, третий', Tag::STATUS_ACTIVE);
 
-            $added = $this->manager->createByString($bundle->getFieldsString('title'));
-            verify($added)->equals(3);
+            $addedBundle = $this->manager->createByString($bundle->getFieldsString('title'));
+            verify($addedBundle->getCount())->equals(3);
 
             $tags = $this->repository->findByNames($bundle->getFieldsString('title', '"'));
 
