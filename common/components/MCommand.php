@@ -33,4 +33,19 @@ final class MCommand extends Command
     {
         return $this->queryInternal('fetchAll', [PDO::FETCH_FUNC, $closure]);
     }
+
+    /**
+     * @param string $table
+     * @param array $columns
+     * @param array $rows
+     * @param string $updateStatement
+     * @return $this
+     */
+    public function batchInsertIfNotExist(string $table, array $columns, array $rows, string $updateStatement)
+    {
+        parent::batchInsert($table, $columns, $rows);
+        $this->setSql($this->getRawSql() . "ON DUPLICATE KEY UPDATE {$updateStatement}");
+
+        return $this;
+    }
 }
