@@ -32,21 +32,21 @@ class CategoryManager
 
     /**
      * @param User $creator
-     * @param CategoriesForm $model
+     * @param CategoriesForm $form
      * @return Category
      * @throws MetaDataExceptions
      * @throws RepositoryException
      * @throws BlogRecordsException
      */
-    public function create(User $creator, CategoriesForm $model): Category
+    public function create(User $creator, CategoriesForm $form): Category
     {
         $category = Category::create(
-            $model->title,
-            $model->slug,
-            $model->description,
-            $this->service->setMetaData($model),
+            $form->title,
+            $form->slug,
+            $form->content,
+            $this->service->setMetaData($form),
             $creator,
-            $model->status
+            $form->status
         );
 
         $category->setPrimaryKey($this->repository->create($category));
@@ -56,16 +56,16 @@ class CategoryManager
 
     /**
      * @param $category
-     * @param CategoriesForm $model
+     * @param CategoriesForm $form
      * @return Category
      * @throws \yii\db\Exception
      */
-    public function edit($category, CategoriesForm $model): Category
+    public function edit($category, CategoriesForm $form): Category
     {
         // FIXME если вернет bool выкинуть 404
         // FIXME фикстуры в тестах возвращают экземпляр модели, переделать, чтобы сюда попадал экземпляр категории
         $category = $this->repository->findOneById($category->id, $category->status);
-        $category->edit($model->title, $model->slug, $model->description, $this->service->setMetaData($model), $model->status);
+        $category->edit($form->title, $form->slug, $form->content, $this->service->setMetaData($form), $form->status);
         $this->repository->update($category);
 
         return $category;

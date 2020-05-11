@@ -27,7 +27,7 @@ final class CategoriesRepository extends AbstractRepository
      * @return int
      * @throws RepositoryException
      */
-    public function create(ContentObjectInterface $category): int
+    public function create(ContentObjectInterface $category): ContentObjectInterface
     {
         $sql = 'INSERT INTO `categories` 
 VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :updated_at, :status)';
@@ -43,7 +43,7 @@ VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :up
             ->bindValue(':updated_at', null, PDO::PARAM_NULL)
             ->bindValue(':status', $category->getStatus(), PDO::PARAM_INT);
 
-        return $this->checker(function () use ($command) {
+        $pk = $this->checker(function () use ($command) {
             return $command->execute();
         })
             ->if(function ($result) {
@@ -51,8 +51,12 @@ VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :up
             })
             ->throw(new RepositoryException('Filed to create', 500))
             ->return(function () {
-                return $this->dao->getLastInsertID();
+                return (int) $this->dao->getLastInsertID();
             });
+
+        $category->setPrimaryKey($pk);
+
+        return $category;
     }
 
     /**
@@ -60,7 +64,7 @@ VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :up
      * @return int
      * @throws RepositoryException
      */
-    public function update(ContentObjectInterface $category): int
+    public function update(ContentObjectInterface $category): ContentObjectInterface
     {
         $sql = 'UPDATE `categories` SET 
                     `title`=:title,
@@ -80,7 +84,7 @@ VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :up
             ->bindValue(':updated_at', $category->getUpdatedAt(), PDO::PARAM_STR_CHAR)
             ->bindValue(':status', $category->getStatus(), PDO::PARAM_INT);
 
-        return $this->checker(function () use ($command) {
+        $pk = $this->checker(function () use ($command) {
             return $command->execute();
         })
             ->if(function ($result) {
@@ -88,8 +92,12 @@ VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :up
             })
             ->throw(new RepositoryException('Filed to update', 500))
             ->return(function () {
-                return $this->dao->getLastInsertID();
+                return (int) $this->dao->getLastInsertID();
             });
+
+        $category->setPrimaryKey($pk);
+
+        return $category;
     }
 
     /***

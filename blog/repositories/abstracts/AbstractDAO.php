@@ -27,4 +27,12 @@ abstract class AbstractDAO
     {
         $this->dao = $dao;
     }
+
+    /**
+     * @return MConnection
+     */
+    public function getDAO()
+    {
+        return $this->dao;
+    }
 }
