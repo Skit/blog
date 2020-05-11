@@ -3,6 +3,8 @@
 namespace common\models\active;
 
 
+use yii\db\ActiveRecord;
+
 /**
  * This is the model class for table "user_profiles".
  *
@@ -12,10 +14,8 @@ namespace common\models\active;
  * @property string|null $avatar_url
  * @property string $created_at
  * @property string|null $updated_at
- *
- * @property Users $user
  */
-class UserProfiles extends \yii\db\ActiveRecord
+class UserProfiles extends ActiveRecord
 {
     /**
      * {@inheritdoc}
