@@ -4,8 +4,9 @@ namespace blog\entities\tag;
 
 
 use blog\entities\common\abstracts\bundles\ObjectBundle;
+use blog\entities\common\exceptions\BundleExteption;
 use blog\entities\tag\exceptions\TagException;
-use Exception;
+use Closure;
 
 /**
  * TODO поменять исключение на BundleException
@@ -19,15 +20,14 @@ class TagBundle extends ObjectBundle
     /**
      * TagBundle constructor.
      * @param array $tags
+     * @param Closure|null $closure
      * @throws TagException
      */
-    public function __construct(array $tags = [])
+    public function __construct(array $tags, Closure $closure)
     {
         try {
-            $this->createBundle(function ($tag) {
-                return Tag::createFull($tag['id'], $tag['title'], $tag['slug'], 0, '', null, $tag['status']);
-            }, $tags);
-        } catch (Exception $e) {
+            parent::__construct($tags, $closure);
+        } catch (BundleExteption $e) {
             throw new TagException("Fail to create tag bundle: {$e->getMessage()}", 0, $e);
         }
     }

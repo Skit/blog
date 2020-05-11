@@ -27,13 +27,13 @@ class ArrayTagBundle extends ArrayBundle
     {
         try {
             $tags = explode($delimiter, $tags);
-            $this->createBundle(function ($tag) use ($status) {
+            $this->createBundle($tags, function ($tag) use ($status) {
                 return [
                     'title' => $title = trim($tag),
                     'slug' => StringTranslator::translate(new OfflineDriver($title)),
                     'status' => $status
                 ];
-            }, $tags);
+            });
         } catch (Exception $e) {
             throw new TagException("Fail to create tag bundle: {$e->getMessage()}", 0, $e);
         }
