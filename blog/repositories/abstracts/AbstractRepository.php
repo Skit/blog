@@ -5,7 +5,6 @@ namespace blog\repositories\abstracts;
 use blog\entities\common\interfaces\ContentObjectInterface;
 use blog\entities\common\RepositoryChecker;
 use blog\repositories\exceptions\RepositoryException;
-use blog\repositories\interfaces\CRUDRepositoryInterface;
 use Closure;
 use PDO;
 
@@ -14,7 +13,7 @@ use PDO;
  *
  * @package blog\repositories\abstracts
  */
-abstract class AbstractRepository extends AbstractDAO implements CRUDRepositoryInterface
+abstract class AbstractRepository extends AbstractDAO
 {
     /**
      * @var string $class
@@ -31,7 +30,7 @@ abstract class AbstractRepository extends AbstractDAO implements CRUDRepositoryI
      * @param int $status
      * @return mixed
      */
-    public function findOneById(int $id, int $status): ContentObjectInterface
+    public function findOneById(int $id, int $status): ?ContentObjectInterface
     {
         return $this->dao
             ->createCommand("SELECT * FROM `{$this->table()}` WHERE `id`=:id AND `status`=:status LIMIT 1")

@@ -15,6 +15,8 @@ abstract class BlogRecordAbstract extends ContentObjectAbstract implements BlogR
 {
     /* @var $user User */
     protected $user;
+    /* @var $creator_id int */
+    protected $creator_id;
     /* @var $content string */
     protected $content;
 

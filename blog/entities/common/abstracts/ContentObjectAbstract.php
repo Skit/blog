@@ -46,7 +46,7 @@ abstract class ContentObjectAbstract implements ContentObjectInterface
      */
     public function isNew(): bool
     {
-        return $this->id === null;
+        return $this->getPrimaryKey() === null;
     }
 
     /**
@@ -54,14 +54,14 @@ abstract class ContentObjectAbstract implements ContentObjectInterface
      */
     public function isActive(): bool
     {
-        return (int) $this->status === static::STATUS_ACTIVE;
+        return $this->getStatus() === static::STATUS_ACTIVE;
     }
     /**
      * @throws BlogRecordsException
      */
     public function activate(): void
     {
-        if ($this->status === static::STATUS_ACTIVE) {
+        if ($this->getStatus() === static::STATUS_ACTIVE) {
             throw new BlogRecordsException('Record is already active');
         }
 
@@ -73,7 +73,7 @@ abstract class ContentObjectAbstract implements ContentObjectInterface
      */
     public function deactivate(): void
     {
-        if ($this->status === static::STATUS_INACTIVE) {
+        if ($this->getStatus() === static::STATUS_INACTIVE) {
             throw new BlogRecordsException('Record is already inactive');
         }
 
@@ -97,10 +97,11 @@ abstract class ContentObjectAbstract implements ContentObjectInterface
      */
     public function getStatus(): int
     {
-        return $this->status;
+        return (int) $this->status;
     }
 
     /**
+     * TODO переделать. 0 это есть значение, null его нет
      * @return int
      */
     public function getPrimaryKey(): int
