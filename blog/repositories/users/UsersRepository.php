@@ -24,10 +24,11 @@ class UsersRepository extends AbstractRepository
      * @param int $status
      * @return User
      */
-    public function findOneById(int $id, int $status): ContentObjectInterface
+    public function findOneById(int $id, int $status): ?ContentObjectInterface
     {
         // TODO профиля может не быть, затестить на left join
         // TODO написать тест на юзера без профиля
+        // TODO если не найден, то кинуть исключение: пользователь не существует или заблокирован
         $sql = "SELECT u.id, u.username, u.email, u.status FROM `users` u 
                 WHERE u.`id`=:id AND u.status=:status LIMIT 1";
 
@@ -40,12 +41,12 @@ class UsersRepository extends AbstractRepository
             ->fetchOneObject($this->getClassName());
     }
 
-    function create(ContentObjectInterface $object): int
+    function create(ContentObjectInterface $object): ContentObjectInterface
     {
         // TODO: Implement create() method.
     }
 
-    public function update(ContentObjectInterface $object): int
+    public function update(ContentObjectInterface $object): ContentObjectInterface
     {
         // TODO: Implement update() method.
     }

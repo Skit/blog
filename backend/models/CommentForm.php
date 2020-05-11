@@ -9,6 +9,7 @@ use yii\base\Model;
  *
  * @property int $id
  * @property string|null $content
+ * @property int $post_id
  * @property int $creator_id
  * @property int $parent_id
  * @property string $created_at
@@ -18,6 +19,7 @@ use yii\base\Model;
 class CommentForm extends Model
 {
     public $content;
+    public $post_id;
     public $creator_id;
     public $parent_id;
     public $status;
@@ -29,8 +31,8 @@ class CommentForm extends Model
     {
         return [
             [['content'], 'string'],
-            [['creator_id', 'content'], 'required'],
-            [['creator_id', 'status', 'parent_id'], 'integer'],
+            [['creator_id', 'content', 'post_id'], 'required'],
+            [['creator_id', 'status', 'parent_id', 'post_id'], 'integer'],
         ];
     }
 
@@ -42,6 +44,7 @@ class CommentForm extends Model
         return [
             'id' => 'ID',
             'content' => 'Content',
+            'post_id' => 'Post ID',
             'creator_id' => 'Creator ID',
             'parent_id' => 'Parent ID',
             'created_at' => 'Created At',

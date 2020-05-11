@@ -51,9 +51,21 @@ class PostBanners implements JsonSerializable
     }
 
     /**
+     * @return string|null
+     */
+    public function getMainUrl(): ?string
+    {
+        if ($this->hasVideoUrl() && $this->hasImageUrl() || $this->hasVideoUrl() && !$this->hasImageUrl()) {
+            return $this->getVideoUrl();
+        }
+
+        return $this->getImageUrl();
+    }
+
+    /**
      * @return mixed
      */
-    public function getImageUrl()
+    public function getImageUrl(): ?string
     {
         return $this->imageUrl;
     }
@@ -61,21 +73,19 @@ class PostBanners implements JsonSerializable
     /**
      * @return mixed
      */
-    public function getVideoUrl()
+    public function getVideoUrl(): ?string
     {
         return $this->videoUrl;
     }
 
-    public function setImageUrl(string $imageUrl): self
+    public function setImageUrl(string $imageUrl): void
     {
         $this->imageUrl = $imageUrl;
-        return $this;
     }
 
-    public function setVideoUrl(string $videoUrl): self
+    public function setVideoUrl(string $videoUrl): void
     {
         $this->videoUrl = $videoUrl;
-        return $this;
     }
 
     public function hasImageUrl(): bool

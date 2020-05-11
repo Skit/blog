@@ -16,7 +16,7 @@ class CommentBundle extends RecursiveContentBundle
      * @param array $comments
      * @throws exceptions\CommentException
      */
-    public function __construct(array $comments)
+    public function __construct(array $comments = [])
     {
         parent::__construct($this->createFromArray($comments));
     }

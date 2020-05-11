@@ -27,8 +27,8 @@ class m200328_161756_post_tag_tbl extends Migration
             'tag_id',
             'tags',
             'id',
-            'NO ACTION',
-            'NO ACTION'
+            'CASCADE',
+            'CASCADE'
         );
 
         $this->addForeignKey(
@@ -37,8 +37,8 @@ class m200328_161756_post_tag_tbl extends Migration
             'post_id',
             'posts',
             'id',
-            'NO ACTION',
-            'NO ACTION'
+            'CASCADE',
+            'CASCADE'
         );
 
         $time = $this->beginCommand('CREATE TRIGGER `tag_frequency_up');

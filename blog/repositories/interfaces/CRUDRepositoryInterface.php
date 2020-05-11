@@ -12,9 +12,9 @@ use blog\entities\common\interfaces\ContentObjectInterface;
  */
 interface CRUDRepositoryInterface
 {
-    public function create(ContentObjectInterface $object): int;
+    public function create(ContentObjectInterface $object): ContentObjectInterface;
 
-    public function update(ContentObjectInterface $object): int;
+    public function update(ContentObjectInterface $object): ContentObjectInterface;
 
-    public function findOneById(int $id, int $status): ContentObjectInterface;
+    public function findOneById(int $id, int $status): ?ContentObjectInterface;
 }

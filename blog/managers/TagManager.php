@@ -5,12 +5,15 @@ namespace blog\managers;
 
 
 use backend\models\TagForm;
+use blog\entities\common\abstracts\bundles\ObjectBundle;
+use blog\entities\common\interfaces\ContentBundleInterface;
 use blog\entities\tag\ArrayTagBundle;
 use blog\entities\tag\exceptions\TagException;
 use blog\entities\tag\Tag;
 use blog\entities\tag\TagBundle;
 use blog\repositories\tag\TagRepository;
 use blog\services\TagService;
+use yii\db\Exception;
 
 /**
  * Class TagManager
@@ -36,7 +39,7 @@ class TagManager
      * @param TagForm $form
      * @return int pk
      * @throws TagException
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     public function create(TagForm $form): int
     {
@@ -47,11 +50,18 @@ class TagManager
 
     /**
      * @param string $tags
-     * @return TagBundle
+     * @return ObjectBundle
+     * @throws Exception
      * @throws TagException
      */
-    public function createByString(string $tags): int
+    public function createByString(string $tags): ObjectBundle
     {
-        return $this->repository->createByBundle(new ArrayTagBundle($tags, Tag::STATUS_ACTIVE));
+        $bundle = $this->service->createBundleFromString($tags);
+        // TODO всякие проверки на успешное создание
+        $this->repository->createFromBundle($bundle);
+
+        return $this->repository->findByNames(
+            $bundle->getFieldsString('title', '"')
+        );
     }
 }

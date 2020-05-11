@@ -6,15 +6,18 @@ namespace blog\repositories\post;
 
 use blog\entities\category\Category;
 use blog\entities\common\interfaces\ContentObjectInterface;
-use blog\entities\post\PostBanners;
+use blog\entities\post\exceptions\PostBlogException;
 use blog\entities\post\Post;
 use blog\entities\relation\exceptions\RelationException;
 use blog\entities\relation\RelationSql;
+use blog\entities\tag\exceptions\TagException;
 use blog\entities\user\Profile;
 use blog\entities\user\User;
 use blog\repositories\abstracts\AbstractRepository;
 use blog\repositories\exceptions\RepositoryException;
+use blog\repositories\postTag\PostTagRepository;
 use PDO;
+use Yii;
 
 /**
  * Class PostRepository
@@ -26,11 +29,11 @@ class PostRepository extends AbstractRepository
     protected $class = Post::class;
 
     /**
-     * @param Post|ContentObjectInterface $post
-     * @return int
+     * @param ContentObjectInterface $post
+     * @return Post
      * @throws RepositoryException
      */
-    public function create(ContentObjectInterface $post): int
+    public function create(ContentObjectInterface $post): ContentObjectInterface
     {
         $sql = "INSERT INTO `posts` VALUES 
                            (NULL, :title, :slug, :preview, :content, :meta_data, :post_banners, :category_id, :creator_id, :created_at, :published_at, NULL, :is_highlight, :status, :count_view)";
@@ -52,16 +55,18 @@ class PostRepository extends AbstractRepository
             ->bindValue(':status', $post->getStatus(), PDO::PARAM_INT)
             ->bindValue(':count_view', $post->getCountView(), PDO::PARAM_INT);
 
-        return $this->checker(function () use ($command) {
-            return $command->execute();
-        })
-        ->if(function ($result) {
-            return !$result;
-        })
-        ->throw(new RepositoryException('Filed to create', 500))
-        ->return(function () {
-            return $this->dao->getLastInsertID();
-        });
+        $pk = $this->checker(function () use ($command) {
+                return $command->execute();})
+            ->if(function ($result) {
+                return !$result;})
+            ->throw(new RepositoryException('Filed to create', 500))
+            ->return(function () {
+                return $this->dao->getLastInsertID();
+             });
+
+        $post->setPrimaryKey($pk);
+
+        return $post;
     }
 
     /**
@@ -71,7 +76,7 @@ class PostRepository extends AbstractRepository
      * @throws RepositoryException
      * @throws RelationException
      */
-    public function findOneById(int $id, int $status): ContentObjectInterface
+    public function findOneById(int $id, int $status): ?ContentObjectInterface
     {
         $sql = "SELECT p.*, cat.title, cat.content, cat.created_at, up.bio, up.avatar_url, u.id, u.username FROM `posts` p 
                 INNER JOIN `categories` cat ON p.`category_id` = cat.`id`
@@ -83,14 +88,39 @@ class PostRepository extends AbstractRepository
         $prepare->withClass('u', User::class)->thatHas('up', Profile::class)
                 ->withClass('cat', Category::class);
 
-        return $this->dao->createCommandWithRelation($prepare)
+        /* @var Post $post */
+        $post =  $this->dao->createCommandWithRelation($prepare)
             ->bindValue(':id', $id, PDO::PARAM_INT)
             ->bindValue(':status', $status, PDO::PARAM_INT)
             ->fetchOneObject($this->getClassName());
+
+        return $post ?: null;
     }
 
-    public function update(ContentObjectInterface $object): int
+    public function update(ContentObjectInterface $object): ContentObjectInterface
     {
         // TODO: Implement update() method.
+    }
+
+    /**
+     * @param int $postId
+     * @return ContentObjectInterface|int
+     * @throws RepositoryException
+     */
+    public function deleteById(int $postId)
+    {
+        $command = $this->dao
+            ->createCommand("DELETE FROM posts WHERE id=:id")
+            ->bindValue(':id', $postId, PDO::PARAM_INT);
+
+        return $this->checker(function () use ($command) {
+            return $command->execute();})
+            ->if(function ($result) {
+                return $result === false;})
+            ->throw(new RepositoryException('Filed to create', 500))
+            ->return(function ($result) {
+                return $result;
+            });
+
     }
 }

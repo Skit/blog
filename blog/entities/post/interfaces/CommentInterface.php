@@ -4,6 +4,7 @@
 namespace blog\entities\post\interfaces;
 
 use blog\entities\post\Comment;
+use blog\entities\post\Post;
 
 interface CommentInterface
 {
@@ -17,5 +18,7 @@ interface CommentInterface
 
     public function createHasCode(): void;
 
-    public function getHashCode(): string;
+    public function getPost(): Post;
+
+    public function getHashCode(): ?string;
 }

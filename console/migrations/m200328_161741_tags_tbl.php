@@ -23,6 +23,7 @@ class m200328_161741_tags_tbl extends Migration
         ], 'CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE=InnoDB');
 
         $this->createIndex('idx-tags-status', 'tags', 'status');
+        $this->createIndex('uidx-tags-title', 'tags', 'title', true);
     }
 
     /**

@@ -26,23 +26,28 @@ class Comment extends BlogRecordAbstract implements CommentInterface, HasRelatio
     private $childComments;
 
     private $hashCode;
+    private $post;
 
     /**
      * @param string $content
+     * @param Post $post
      * @param User $creator
      * @param Comment $parentComment
      * @param int $status
      * @return static
      * @throws CommentException
      */
-    public static function create(string $content, User $creator, ?Comment $parentComment, int $status): self
+    public static function create(string $content, int $status, ?Comment $parentComment, Post $post, User $creator): self
     {
-        return self::createFull(null, $content, $creator, $parentComment, (new Date())->getFormatted(), null, $status);
+        return self::construct(null, $content, $post,
+            $creator, $parentComment, (new Date())->getFormatted(), null, $status);
     }
 
     /**
+     * TODO аргументы идут в порядке, как в базе. Может сделать обязательные впереди, все остальные null по умолчанию
      * @param int|null $id
      * @param string $content
+     * @param Post $post
      * @param User $creator
      * @param Comment|null $parentComment
      * @param string $createdAt
@@ -51,20 +56,25 @@ class Comment extends BlogRecordAbstract implements CommentInterface, HasRelatio
      * @return static
      * @throws CommentException
      */
-    public static function createFull(?int $id, string $content, User $creator, ?Comment $parentComment,
-                                      string $createdAt, ?string $updatedAt, int $status): self
+    public static function construct(?int $id, string $content, Post $post, User $creator, ?Comment $parentComment,
+                                     ?string $createdAt, ?string $updatedAt, int $status): self
     {
         try {
             $comment = new self();
             $comment->id = $id;
             $comment->checkUserToActive($creator);
-
+            // TODO переделать, либо задаем объекты либо айдишники
+            $comment->creator_id = $creator->getPrimaryKey();
+            $comment->post = $post;
             $comment->user = $creator;
-            // TODO вынести валидацию из сеттера?
+
+            // TODO валидация должа что-то возвращать. переделать
+            $comment->validateText($content);
             $comment->setContent($content);
+
             $comment->status = $status;
             $comment->created_at = $createdAt;
-            $comment->created_at = $updatedAt;
+            $comment->updated_at = $updatedAt;
 
             $comment->createHasCode();
 
@@ -138,7 +148,6 @@ class Comment extends BlogRecordAbstract implements CommentInterface, HasRelatio
      */
     public function setContent(string $content): void
     {
-        $this->validateText($content);
         $this->content = $content;
     }
 
@@ -195,7 +204,7 @@ class Comment extends BlogRecordAbstract implements CommentInterface, HasRelatio
     /**
      * @return string
      */
-    public function getHashCode(): string
+    public function getHashCode(): ?string
     {
         return $this->hashCode;
     }
@@ -213,9 +222,22 @@ class Comment extends BlogRecordAbstract implements CommentInterface, HasRelatio
      */
     public function getParent(): Comment
     {
+        // TODO пустой родитель должен правильно сетиться или вернуть null
         return $this->parentComment ?? new Comment();
     }
 
+    /**
+     * @return Post
+     */
+    public function getPost(): Post
+    {
+        return $this->post;
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     */
     public function __set($name, $value)
     {
         $this->setRelationObject($name, $value);

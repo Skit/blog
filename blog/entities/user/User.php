@@ -43,12 +43,43 @@ class User extends ContentObjectAbstract implements UserInterface, AsRelation, H
      */
     public static function create(string $username, string $email, string $role): User
     {
+        return self::construct(null, $username, $role, null, null, null,
+                        $email,  static::STATUS_INACTIVE, Date::getFormatNow(), null, null, null);
+    }
+
+    /**
+     * TODO аргументы идут в порядке, как в базе. Может сделать обязательные впереди, все остальные null по умолчанию
+     * @param int|null $id
+     * @param string $username
+     * @param string $role
+     * @param string|null $authKey
+     * @param string|null $passwordHash
+     * @param string|null $passwordResetToken
+     * @param string|null $email
+     * @param int $status
+     * @param string|null $createdAt
+     * @param string|null $updatedAt
+     * @param string|null $verificationToken
+     * @param Profile|null $profile
+     * @return User
+     */
+    public static function construct(?int $id, string $username, string $role, ?string $authKey, ?string $passwordHash,
+                                     ?string $passwordResetToken, ?string $email, int $status, ?string $createdAt,
+                                     ?string $updatedAt, ?string $verificationToken, ?Profile $profile)
+    {
         $user = new User;
+        $user->id = $id;
         $user->username = $username;
-        $user->email = $email;
         $user->role = $role;
-        $user->status = static::STATUS_INACTIVE;
-        $user->created_at = Date::getFormatNow();
+        $user->auth_key = $authKey;
+        $user->password_hash = $passwordHash;
+        $user->password_reset_token = $passwordResetToken;
+        $user->email = $email;
+        $user->status = $status;
+        $user->created_at = $createdAt;
+        $user->updated_at = $updatedAt;
+        $user->verification_token = $verificationToken;
+        $user->profile = $profile;
 
         return $user;
     }

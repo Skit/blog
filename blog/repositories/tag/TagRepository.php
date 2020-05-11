@@ -6,6 +6,7 @@ namespace blog\repositories\tag;
 
 use blog\entities\common\interfaces\ContentBundleInterface;
 use blog\entities\common\interfaces\ContentObjectInterface;
+use blog\entities\tag\exceptions\TagException;
 use blog\entities\tag\Tag;
 use blog\entities\tag\TagBundle;
 use blog\repositories\abstracts\AbstractRepository;
@@ -26,7 +27,7 @@ class TagRepository extends AbstractRepository
      * @return int Object id
      * @throws Exception
      */
-    public function create($tag): int
+    public function create($tag): ContentObjectInterface
     {
         $result = $this->dao
             ->createCommand('INSERT INTO `tags` (title, slug, status) VALUES (:title, :slug, :status)')
@@ -35,20 +36,22 @@ class TagRepository extends AbstractRepository
             ->bindValue(':status', $tag->getStatus(), PDO::PARAM_INT)
             ->execute();
 
-        return $result ? $this->dao->getLastInsertID() : 0;
+        // TODO сделать на чекере
+        $tag->setPrimaryKey($this->dao->getLastInsertID());
+
+        return $tag;
     }
 
     /**
      * Вынести в интерфейс репов
      * @param ContentBundleInterface $bundle
-     * @return int Rows affected
-     * @throws Exception
+     * @return int
      */
-    public function createByBundle(ContentBundleInterface $bundle): int
+    public function createFromBundle(ContentBundleInterface $bundle): int
     {
         return $this->dao
             ->createCommand()
-            ->batchInsert($this->table, ['title', 'slug', 'status'], $bundle->getBundle())
+            ->batchInsertIfNotExist($this->table, ['title', 'slug', 'status'], $bundle->getBundle(), 'status=status')
             ->execute();
     }
 
@@ -56,10 +59,12 @@ class TagRepository extends AbstractRepository
      * TODO вынести в итерфейс репов
      * @param string $fields
      * @return TagBundle
+     * @throws TagException
      */
     public function findByNames(string $fields): ContentBundleInterface
     {
-        $bundle = new TagBundle();
+        $bundle = new TagBundle([], function () {});
+
         $this->dao
             ->createCommand("SELECT * FROM `tags` WHERE `title` IN ({$fields})")
             ->fetchAllObject(function(...$args) use ($bundle) {
@@ -69,7 +74,31 @@ class TagRepository extends AbstractRepository
         return $bundle;
     }
 
-    public function update(ContentObjectInterface $object): int
+    /**
+     * TODO если тергать метод с манагера, то передавать анонимку можно сверху
+     * @param int $id
+     * @return TagBundle
+     * @throws TagException
+     */
+    public function findAllById(int $id): TagBundle
+    {
+        $bundle = new TagBundle([], function () {});
+
+        $sql = 'SELECT t.* FROM post_tag pt 
+        INNER JOIN tags t on pt.tag_id = t.id 
+        WHERE pt.post_id=:post_id';
+
+        $this->dao
+            ->createCommand("SELECT t.* FROM `post_tag` pt INNER JOIN tags t on pt.tag_id = t.id WHERE pt.`post_id`=:post_id ")
+            ->bindValue(':post_id', $id, PDO::PARAM_INT)
+            ->fetchAllObject(function(...$args) use ($bundle) {
+                $bundle->append(Tag::createFull($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6]));
+            });
+
+        return $bundle;
+    }
+
+    public function update(ContentObjectInterface $object): ContentObjectInterface
     {
         // TODO: Implement update() method.
     }

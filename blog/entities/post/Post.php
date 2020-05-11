@@ -40,7 +40,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
     /* @var MetaData|string $meta_data */
     private $meta_data;
     private $category;
-    /* @var $comments TagBundle */
+    /* @var $tagsBundle TagBundle */
     private $tags;
     /* @var $comments CommentBundle */
     private $comments;
@@ -252,6 +252,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
 
     /**
      * @return PostBanners
+     * @throws PostBlogException
      */
     public function getBanners(): PostBanners
     {

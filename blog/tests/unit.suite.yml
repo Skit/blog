@@ -11,5 +11,6 @@ modules:
         - \Helper\Unit
     config:
         Yii2:
+          cleanup: false
           configFile: '../common/config/codeception-local.php'
     step_decorators: ~

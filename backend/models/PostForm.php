@@ -8,6 +8,7 @@ use yii\base\Model;
  * @property int $id
  * @property string $title
  * @property string $slug
+ * @property string $tags
  * @property string|null $preview
  * @property string|null $content
  * @property string|null $meta_title
@@ -31,6 +32,7 @@ class PostForm extends Model
     public $slug;
     public $preview;
     public $content;
+    public $tags;
     public $meta_title;
     public $meta_description;
     public $meta_keywords;
@@ -52,10 +54,9 @@ class PostForm extends Model
     {
         return [
             [['title', 'slug', 'category_id'], 'required'],
-            [['content'], 'string'],
-            [['meta_data', 'post_banners', 'published_at'], 'safe'],
-            [['category_id', 'is_highlight', 'status'], 'integer'],
-            [['title', 'slug'], 'string', 'max' => 255],
+            [['content', 'tags', 'published_at'], 'string'],
+            [['category_id', 'status'], 'integer'],
+            [['title', 'slug', 'meta_title', 'meta_description', 'meta_keywords', 'video_url', 'image_url'], 'string', 'max' => 255],
             [['preview'], 'string', 'max' => 500],
         ];
     }

@@ -15,8 +15,8 @@ class m200328_161805_comments_tbl extends Migration
         $this->createTable('comments', [
             'id' => $this->primaryKey()->unsigned(),
             'content' => $this->text()->notNull(),
-            'post_id' => $this->integer()->unsigned(),
-            'creator_id' => $this->integer()->notNull(),
+            'post_id' => $this->integer()->unsigned()->notNull(),
+            'creator_id' => $this->integer()->notNull()->notNull(),
             'parent_id' => $this->integer()->unsigned(),
             'created_at' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP')->notNull(),
             'updated_at' => $this->timestamp(),
