@@ -8,13 +8,8 @@ use backend\models\PostForm;
 use blog\entities\common\Date;
 use blog\entities\post\Post;
 use blog\managers\PostManager;
-use blog\repositories\category\CategoriesRepository;
-use blog\repositories\post\PostRepository;
-use blog\repositories\users\UsersRepository;
-use blog\services\PostService;
 use Codeception\Test\Unit;
 use common\fixtures\ActiveCategoriesFixture;
-use common\fixtures\ActiveCommentsFixture;
 use common\fixtures\UserFixture;
 use common\fixtures\UserProfilesFixture;
 use Faker\Factory;
@@ -27,23 +22,18 @@ use Yii;
  * @package blog\tests\unit\post
  *
  * @property Generator $faker
- * @property PostRepository $repository
+ * @property PostManager $manager
  */
 class PostCreateTest extends Unit
 {
     protected $tester;
-    private $repository;
-    private $userRepository;
     private $manager;
     private $faker;
 
     public function _setUp()
     {
         $this->faker = Factory::create();
-        $this->repository = new PostRepository(Yii::$app->db);
-        $this->userRepository = new UsersRepository(Yii::$app->db);
-        $categoryRepository = new CategoriesRepository(Yii::$app->db);
-        $this->manager = new PostManager($this->repository,$categoryRepository, new PostService());
+        $this->manager = Yii::$container->get(PostManager::class);
 
         return parent::_setUp();
     }
@@ -80,23 +70,34 @@ class PostCreateTest extends Unit
         $form->meta_keywords = $this->faker->words(25, true);
         $form->meta_description = $this->faker->text(255);
         $form->image_url = $this->faker->imageUrl();
-        $form->video_url =  '';
+        $form->video_url =  $this->faker->imageUrl();
         $form->published_at = Date::getFormatNow();
         $form->status = Post::STATUS_ACTIVE;
+        $form->tags = 'first, second, third';
         $form->count_view = 0;
         $form->category_id = $category->id;
         $form->creator_id = $user->id;
 
-        $user = $this->userRepository->findOneById($user->id, $user->status);
-        $post = $this->manager->create($user, $form);
-        $post = $this->repository->findOneById($post->getPrimaryKey(), $form->status);
+        $post = $this->manager->create($form);
+        $form->id = $post->getPrimaryKey();
+
+        $post = $this->manager->find($form);
+        $this->manager->delete($post);
+
+        expect($post->getTags()->getCount())->equals(3);
+        expect($post->getTags()->getFieldsString('title'))->notNull();
 
         expect($post->isHighlight())->false();
         expect($post->getContent())->equals($form->content);
         expect($post->getCategory()->getContent())->notNull();
         expect($post->getCreator()->getProfile())->notNull();
-        expect($post->getBanners()->getVideoUrl())->equals('');
+
+        expect($post->getBanners()->getVideoUrl())->equals($form->video_url);
         expect($post->getBanners()->getImageUrl())->equals($form->image_url);
+        expect($post->getBanners()->getMainUrl())->equals($form->video_url);
+
+        expect($post->getMetaData()->getTitle())->equals($form->meta_title);
+        expect($post->getMetaData()->getKeywords())->equals($form->meta_keywords);
         expect($post->getMetaData()->getDescription())->equals($form->meta_description);
     }
 }
