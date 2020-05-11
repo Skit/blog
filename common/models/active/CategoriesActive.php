@@ -10,7 +10,7 @@ use yii\db\ActiveRecord;
  * @property int $id
  * @property string $title
  * @property string $slug
- * @property string|null $description
+ * @property string|null $content
  * @property string $creator_id
  * @property string $created_at
  * @property string $meta_data

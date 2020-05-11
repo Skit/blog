@@ -60,7 +60,7 @@ class CategoryEditTest extends Unit
         $editForm = new CategoriesForm();
         $editForm->title = $this->fc->title;
         $editForm->slug = $this->fc->slug;
-        $editForm->description = $this->fc->description;
+        $editForm->content = $this->fc->content;
         $editForm->status = $this->fc->status;
 
         $category = $this->manager->edit($this->fc, $editForm);
@@ -75,7 +75,7 @@ class CategoryEditTest extends Unit
         $editForm = new CategoriesForm();
         $editForm->title = $this->fc->title;
         $editForm->slug = $this->fc->slug;
-        $editForm->description = $this->fc->description;
+        $editForm->content = $this->fc->content;
         $editForm->status = $this->fc->status;
         $editForm->meta_title = 'seo t';
         $editForm->meta_description = 'seo d';
@@ -95,14 +95,14 @@ class CategoryEditTest extends Unit
         $editForm = new CategoriesForm();
         $editForm->title = $title = uniqid('t');
         $editForm->slug = $slug = uniqid('s');
-        $editForm->description = $description = uniqid('d');
+        $editForm->content = $content = uniqid('d');
         $editForm->status = Category::STATUS_INACTIVE;
 
         $category = $this->manager->edit($this->fc, $editForm);
 
         expect($category->getTitle())->equals($title);
         expect($category->getSlug())->equals($slug);
-        expect($category->getContent())->equals($description);
+        expect($category->getContent())->equals($content);
         expect($category->getMetaData()->getTitle())->null();
     }
 
@@ -113,7 +113,7 @@ class CategoryEditTest extends Unit
         $editForm = new CategoriesForm();
         $editForm->title = $this->fc->title;
         $editForm->slug = $this->fc->slug;
-        $editForm->description = $this->fc->description;
+        $editForm->content = $this->fc->content;
         $editForm->status = Category::STATUS_ACTIVE;
 
         $category = $this->manager->edit($this->fc, $editForm);

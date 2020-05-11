@@ -73,7 +73,7 @@ class CategoryCreateTest extends Unit
         $createForm = new CategoriesForm();
         $createForm->title = $this->faker->title;
         $createForm->slug = $this->faker->slug;
-        $createForm->description = $this->faker->text;
+        $createForm->content = $this->faker->text;
         $createForm->status = Category::STATUS_ACTIVE;
         $createForm->meta_title = $this->faker->title;
         $createForm->meta_keywords = $this->faker->sentence(5, true);
@@ -96,7 +96,7 @@ class CategoryCreateTest extends Unit
         $createForm = new CategoriesForm();
         $createForm->title = $this->faker->title;
         $createForm->slug = $this->faker->slug;
-        $createForm->description = $this->faker->text;
+        $createForm->content = $this->faker->text;
         $createForm->status = Category::STATUS_ACTIVE;
 
         $user = $this->tester->grabFixture('user', 0);
@@ -112,7 +112,7 @@ class CategoryCreateTest extends Unit
         $createForm = new CategoriesForm();
         $createForm->title = $this->faker->title;
         $createForm->slug = $this->faker->slug;
-        $createForm->description = $this->faker->text;
+        $createForm->content = $this->faker->text;
         $createForm->status = Category::STATUS_INACTIVE;
 
         $user = $this->tester->grabFixture('user', 0);

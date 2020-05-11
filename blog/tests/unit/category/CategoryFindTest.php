@@ -60,7 +60,7 @@ class CategoryFindTest extends Unit
         expect($this->fc->status)->int();
         expect($this->fc->title)->string();
         expect($this->fc->slug)->string();
-        expect($this->fc->description)->string();
+        expect($this->fc->content)->string();
         expect($this->fc->created_at)->string();
         expect($this->fc->meta_data)->array();
         expect($this->fc->updated_at)->null();
