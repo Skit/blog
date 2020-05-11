@@ -10,20 +10,23 @@ use blog\entities\tag\Tag;
  * Class PostTag
  * @package blog\entities\common
  */
-class PostTag
+class TagPost
 {
     private $postId;
     private $tagId;
 
     /**
-     * PostTag constructor.
      * @param Post $post
      * @param Tag $tag
+     * @return TagPost
      */
-    public function __construct(Post $post, Tag $tag)
+    public static function create(Post $post, Tag $tag)
     {
-        $this->postId = $post->getPrimaryKey();
-        $this->tagId = $tag->getPrimaryKey();
+        $postTag = new self;
+        $postTag->postId = $post->getPrimaryKey();
+        $postTag->tagId = $tag->getPrimaryKey();
+
+        return $postTag;
     }
 
     /**
