@@ -6,10 +6,9 @@ namespace blog\managers;
 
 use backend\models\PostForm;
 use blog\entities\category\Category;
-use blog\entities\common\MetaData;
+use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\post\exceptions\PostBlogException;
 use blog\entities\post\Post;
-use blog\entities\post\PostBanners;
 use blog\entities\relation\exceptions\RelationException;
 use blog\entities\tag\exceptions\TagException;
 use blog\entities\user\User;
@@ -20,6 +19,7 @@ use blog\repositories\tag\TagRepository;
 use blog\repositories\users\UsersRepository;
 use blog\services\PostService;
 use common\components\MTransaction;
+use yii\db\Exception;
 
 /**
  * Class PostManager
@@ -64,6 +64,7 @@ class PostManager
      * @param PostForm $form
      * @return Post
      * @throws PostBlogException
+     * @throws RelationException
      * @throws RepositoryException
      * @throws TagException
      */
@@ -71,22 +72,7 @@ class PostManager
     {
         $user = $this->userRepository->findOneById($form->creator_id, User::STATUS_ACTIVE);
         $category = $this->categoryRepository->findOneById($form->category_id, Category::STATUS_ACTIVE);
-
-        $mediaData = PostBanners::create($form->image_url, $form->video_url);
-        $metaData = new MetaData($form->meta_title, $form->meta_description, $form->meta_keywords);
-
-        $post = Post::create(
-            $form->title,
-            $form->slug,
-            $mediaData,
-            $form->content,
-            $form->preview,
-            $metaData,
-            $category,
-            $user,
-            $form->published_at,
-            $form->status
-        );
+        $post = $this->service->makeCreate($form, $category, $user);
 
         $this->transaction->run(function () use ($post, $form) {
             $post = $this->repository->create($post);
@@ -100,6 +86,7 @@ class PostManager
     }
 
     /**
+     * TODO в мэнэджере поиск только по объекту Post
      * @param PostForm $post
      * @return Post
      * @throws PostBlogException
@@ -117,8 +104,42 @@ class PostManager
 
     /**
      * @param Post $post
-     * @return int
+     * @return PostForm
+     * @throws PostBlogException
+     * @throws MetaDataExceptions
+     */
+    public function getForm(Post $post)
+    {
+        return $this->service->fillForm($post);
+    }
+
+    /**
+     * @param PostForm $form
+     * @param Post $post
+     * @return Post
+     * @throws PostBlogException
+     * @throws RelationException
      * @throws RepositoryException
+     */
+    public function update(PostForm $form, Post $post): Post
+    {
+        $category = $this->categoryRepository->findOneById($form->category_id, Category::STATUS_ACTIVE);
+        $post = $this->service->makeEdit($form, $post, $category);
+
+        $this->transaction->run(function () use ($post, $form) {
+            $this->repository->update($post);
+            $this->assignManager->revoke($post);
+            $tagsBundle = $this->tagManager->createByString($form->tags);
+            $this->assignManager->manyTo($tagsBundle, $post);
+        });
+
+        return $post;
+    }
+
+    /**
+     * @param Post $post
+     * @return int
+     * @throws Exception
      */
     public function delete(Post $post): int
     {

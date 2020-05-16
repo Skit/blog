@@ -2,6 +2,7 @@
 
 namespace blog\entities\post;
 
+use blog\entities\category\Category;
 use blog\entities\category\interfaces\CategoryInterface;
 use blog\entities\common\abstracts\BlogRecordAbstract;
 use blog\entities\common\Date;
@@ -27,10 +28,13 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
 {
     use HasRelationTrait;
 
+    public const STATUS_DRAFT = 3;
+    // TODO добавить возможность доступка к статье только по ссылке
+    public const ALLOW_BY_URL = 4;
+
     public const DEFAULT_COUNT_VIEW = 0;
     public const BANNER_TYPE_IMAGE = 1;
     public const BANNER_TYPE_VIDEO = 2;
-    public const STATUS_DRAFT = 0;
 
     private $title;
     private $slug;
@@ -39,13 +43,14 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
     private $preview;
     /* @var MetaData|string $meta_data */
     private $meta_data;
+    /* @var  Category $category */
     private $category;
     /* @var $tagsBundle TagBundle */
     private $tags;
     /* @var $comments CommentBundle */
     private $comments;
-    private $countView;
-    private $publishedAt;
+    private $count_view;
+    private $published_at;
     private $bannerType;
     private $isHighlight;
 
@@ -64,7 +69,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
      * @throws PostBlogException
      */
     public static function create(string $title, string $slug, PostBanners $mediaUrls, string $content, string $preview,
-                                  MetaData $metaData, CategoryInterface $category, User $creator, string $published_at, int $status)
+                                  MetaData $metaData, CategoryInterface $category, User $creator, ?string $published_at, int $status)
     {
         try {
             $post = new self;
@@ -79,9 +84,9 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
             $post->setPostBanners($mediaUrls);
             $post->user = $creator;
             $post->created_at = (new Date())->getFormatted();
-            $post->publishedAt = (new Date($published_at))->getFormatted();
+            $post->published_at = (new Date($published_at))->getFormatted();
             $post->status = $status;
-            $post->countView = static::DEFAULT_COUNT_VIEW;
+            $post->count_view = static::DEFAULT_COUNT_VIEW;
         } catch (Exception $e) {
             throw new PostBlogException("Fail to create post with: {$e->getMessage()}", 0, $e);
         }
@@ -113,7 +118,8 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
             $this->setCategory($category);
             $this->meta_data = $metaData;
             $this->updated_at = (new Date())->getFormatted();
-            $this->publishedAt = (new Date($published_at))->getFormatted();
+            // TODO если '' дата будет текущая
+            $this->published_at = (new Date($published_at))->getFormatted();
             $this->status = $status;
         } catch (Exception $e) {
             throw new PostBlogException("Fail to update post with: {$e->getMessage()}", 0, $e);
@@ -186,7 +192,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
      */
     public function setTags(ContentBundleInterface $tagBundle): void
     {
-        if (!$this->isActive()) {
+        if ($this->status === static::STATUS_DELETED) {
             throw new PostBlogException('Post must be active');
         }
 
@@ -287,7 +293,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
     /**
      * @return mixed
      */
-    public function getCategory()
+    public function getCategory(): Category
     {
         return $this->category;
     }
@@ -297,7 +303,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
      */
     public function getCountView(): int
     {
-        return $this->countView;
+        return (int) $this->count_view;
     }
 
     /**
@@ -337,7 +343,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
      */
     public function getPublishedAt()
     {
-        return $this->publishedAt;
+        return $this->published_at;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace blog\repositories\category;
 
 use blog\entities\category\Category;
 use blog\entities\common\interfaces\ContentObjectInterface;
+use blog\entities\relation\exceptions\RelationException;
 use blog\entities\relation\RelationSql;
 use blog\entities\user\Profile;
 use blog\entities\user\User;
@@ -84,7 +85,7 @@ VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :up
             ->bindValue(':updated_at', $category->getUpdatedAt(), PDO::PARAM_STR_CHAR)
             ->bindValue(':status', $category->getStatus(), PDO::PARAM_INT);
 
-        $pk = $this->checker(function () use ($command) {
+        $this->checker(function () use ($command) {
             return $command->execute();
         })
             ->if(function ($result) {
@@ -95,18 +96,18 @@ VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :up
                 return (int) $this->dao->getLastInsertID();
             });
 
-        $category->setPrimaryKey($pk);
 
         return $category;
     }
 
-    /***
+    /**
      * @param int $id
      * @param int $status
-     * @return ContentObjectInterface
+     * @return ContentObjectInterface|Category
      * @throws RepositoryException
+     * @throws RelationException
      */
-    public function findOneById(int $id, int $status): ContentObjectInterface
+    public function findOneById(int $id, int $status): ?ContentObjectInterface
     {
         $sql = 'SELECT c.*, u.id, u.username, u.email, u.status, p.`bio`, p.`avatar_url`
                 FROM `categories` c 
@@ -122,15 +123,6 @@ VALUES (NULL, :title, :slug, :content, :meta_data, :creator_id, :created_at, :up
             ->bindValue(':id', $id, PDO::PARAM_INT)
             ->bindValue(':status', $status, PDO::PARAM_INT);
 
-        return $this->checker(function () use ($command) {
-            return $command->fetchOneObject($this->getClassName());
-        })
-        ->if(function ($result) {
-            return !$result;
-        })
-        ->throw(new RepositoryException('Record does not found', 404))
-        ->return(function ($record) {
-            return $record;
-        });
+        return $command->fetchOneObject($this->getClassName()) ?: null;
     }
 }

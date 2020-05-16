@@ -1,0 +1,12 @@
+<?php
+
+return [
+    [
+        'post_id' => 1,
+        'tag_id' => 1,
+    ],
+    [
+        'post_id' => 1,
+        'tag_id' => 2,
+    ]
+];

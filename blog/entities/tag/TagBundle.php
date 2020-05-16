@@ -31,4 +31,12 @@ class TagBundle extends ObjectBundle
             throw new TagException("Fail to create tag bundle: {$e->getMessage()}", 0, $e);
         }
     }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getFieldsString('title', '', ', ');
+    }
 }

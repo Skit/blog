@@ -78,6 +78,7 @@ class PostCreateTest extends Unit
         $form->category_id = $category->id;
         $form->creator_id = $user->id;
 
+
         $post = $this->manager->create($form);
         $form->id = $post->getPrimaryKey();
 
