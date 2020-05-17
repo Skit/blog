@@ -8,6 +8,7 @@ use blog\entities\category\Category;
 use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\common\MetaData;
 use blog\entities\post\exceptions\PostBlogException;
+use blog\entities\post\interfaces\HighlighterInterface;
 use blog\entities\post\Post;
 use blog\entities\post\PostBanners;
 use blog\entities\user\User;
@@ -16,8 +17,20 @@ use blog\entities\user\User;
  * Class PostService
  * @package blog\services
  */
-class PostService
+final class PostService
 {
+    private $highlighter;
+
+    /**
+     * PostService constructor.
+     * @param $highlighter
+     */
+    public function __construct(HighlighterInterface $highlighter)
+    {
+        $this->highlighter = $highlighter;
+    }
+
+
     /**
      * @param PostForm $form
      * @param User $user
@@ -31,7 +44,7 @@ class PostService
         // TODO Выдать через статический метод
         $metaData = new MetaData($form->meta_title, $form->meta_description, $form->meta_keywords);
 
-        return Post::create(
+        $post = Post::create(
             $form->title,
             $form->slug,
             $mediaData,
@@ -43,6 +56,10 @@ class PostService
             $form->published_at,
             $form->status
         );
+
+        $post->highlighting($this->highlighter);
+
+        return $post;
     }
 
     /**
@@ -69,6 +86,8 @@ class PostService
                 $form->published_at,
                 $form->status
             );
+
+        $post->highlighting($this->highlighter);
 
         return $post;
     }

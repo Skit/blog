@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<p>
+    Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+    Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+    when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+    It has survived not only five centuries, but also the leap into electronic typesetting,
+    remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset
+    sheets containing Lorem Ipsum passages, and more recently with desktop publishing
+    software like Aldus PageMaker including versions of Lorem Ipsum.
+</p>
+<div id="_lang__java">
+    import java.util.Arrays;
+    import java.util.List;
+    import org.springframework.web.client.RestTemplate;
+    import com.howtoprogram.domain.Book;
+
+    public class BookRepositoryImplSpring {
+
+    private static final String URI_BOOK = "http://localhost:8080/v1/books";
+    private RestTemplate restTemplate = new RestTemplate();;
+
+    public Book[] getAllBooks() {
+    Book[] books = restTemplate.getForObject(URI_BOOK, Book[].class);
+    return books;
+    }
+    }
+</div>
+<p>
+    Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+    Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+    when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+    It has survived not only five centuries, but also the leap into electronic typesetting,
+    remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset
+    sheets containing Lorem Ipsum passages, and more recently with desktop publishing
+    software like Aldus PageMaker including versions of Lorem Ipsum.
+</p>
+<pre class="octocat-spinner _lang__php  my-6 js-details-dialog-spinner">
+    class Employee implements AggregateRoot
+    {
+    use EventTrait;
+
+    private $id;
+    private $name;
+    private $address;
+    private $phones;
+    private $createDate;
+    private $statuses = [];
+
+    public function __construct(Id $id, \DateTimeImmutable $date, Name $name, Address $address, array $phones)
+    {
+        $this->id = $id;
+        $this->name = $name;
+        $this->address = $address;
+        $this->phones = new Phones($phones);
+        $this->createDate = $date;
+        $this->addStatus(Status::ACTIVE, $date);
+        $this->recordEvent(new Events\EmployeeCreated($this->id));
+    }
+
+    ...
+
+    public function getId(): Id { return $this->id; }
+    public function getName(): Name { return $this->name; }
+    public function getPhones(): array { return $this->phones->getAll(); }
+    public function getAddress(): Address { return $this->address; }
+    public function getCreateDate(): \DateTimeImmutable { return $this->createDate; }
+    public function getStatuses(): array { return $this->statuses; }
+</pre>
+<p>
+    Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+    Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+    when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+    It has survived not only five centuries, but also the leap into electronic typesetting,
+    remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset
+    sheets containing Lorem Ipsum passages, and more recently with desktop publishing
+    software like Aldus PageMaker including versions of Lorem Ipsum.
+</p>
+</body>
+</html>

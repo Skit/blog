@@ -24,9 +24,13 @@ interface PostInterface
 
     public function setBannerType(int $bannerType): void;
 
-    public function setHighlight(Closure $closure): void;
+    public function highlighting(HighlighterInterface $highlighter): void;
 
     public function isHighlight(): bool;
+
+    public function getHighlightContent(): ?string;
+
+    public function getZipContent(): ?string;
 
     public function getTags(): ?ContentBundleInterface;
 

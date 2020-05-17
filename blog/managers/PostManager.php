@@ -19,7 +19,6 @@ use blog\repositories\tag\TagRepository;
 use blog\repositories\users\UsersRepository;
 use blog\services\PostService;
 use common\components\MTransaction;
-use yii\db\Exception;
 
 /**
  * Class PostManager
@@ -129,8 +128,11 @@ class PostManager
         $this->transaction->run(function () use ($post, $form) {
             $this->repository->update($post);
             $this->assignManager->revoke($post);
-            $tagsBundle = $this->tagManager->createByString($form->tags);
-            $this->assignManager->manyTo($tagsBundle, $post);
+
+            if ($form->tags) {
+                $tagsBundle = $this->tagManager->createByString($form->tags);
+                $this->assignManager->manyTo($tagsBundle, $post);
+            }
         });
 
         return $post;
@@ -139,7 +141,6 @@ class PostManager
     /**
      * @param Post $post
      * @return int
-     * @throws Exception
      */
     public function delete(Post $post): int
     {

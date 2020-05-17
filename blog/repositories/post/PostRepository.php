@@ -6,19 +6,18 @@ namespace blog\repositories\post;
 
 use blog\entities\category\Category;
 use blog\entities\common\exceptions\MetaDataExceptions;
+use blog\entities\common\interfaces\BlogRecordsInterface;
 use blog\entities\common\interfaces\ContentObjectInterface;
 use blog\entities\post\exceptions\PostBlogException;
+use blog\entities\post\interfaces\PostInterface;
 use blog\entities\post\Post;
 use blog\entities\relation\exceptions\RelationException;
 use blog\entities\relation\RelationSql;
-use blog\entities\tag\exceptions\TagException;
 use blog\entities\user\Profile;
 use blog\entities\user\User;
 use blog\repositories\abstracts\AbstractRepository;
 use blog\repositories\exceptions\RepositoryException;
-use blog\repositories\postTag\PostTagRepository;
 use PDO;
-use Yii;
 use yii\db\Exception;
 
 /**
@@ -31,20 +30,24 @@ class PostRepository extends AbstractRepository
     protected $class = Post::class;
 
     /**
-     * @param ContentObjectInterface $post
+     * @param Post $post
      * @return Post
+     * @throws MetaDataExceptions
+     * @throws PostBlogException
      * @throws RepositoryException
      */
-    public function create(ContentObjectInterface $post): ContentObjectInterface
+    public function create(Post $post): ContentObjectInterface
     {
         $sql = "INSERT INTO `posts` VALUES 
-                           (NULL, :title, :slug, :preview, :content, :meta_data, :post_banners, :category_id, :creator_id, :created_at, :published_at, NULL, :is_highlight, :status, :count_view)";
+                           (NULL, :title, :slug, :preview, :content, :highlighted_content, :zip_content, :meta_data, :post_banners, :category_id, :creator_id, :created_at, :published_at, NULL, :is_highlight, :status, :count_view)";
 
         $command = $this->dao
             ->createCommand($sql)
             ->bindValue(':title', $post->getTitle(), PDO::PARAM_STR_CHAR)
             ->bindValue(':slug', $post->getSlug(), PDO::PARAM_STR_CHAR)
             ->bindValue(':content', $post->getContent(), PDO::PARAM_STR)
+            ->bindValue(':highlighted_content', $post->getHighlightContent(), PDO::PARAM_STR)
+            ->bindValue(':zip_content', $post->getZipContent(), PDO::PARAM_STR)
             ->bindValue(':preview', $post->getPreview(), PDO::PARAM_STR)
             ->bindValue(':meta_data', $post->getMetaData(), PDO::PARAM_STR)
             // TODO согласовать имена post_banners и getMediaUrls
@@ -75,8 +78,8 @@ class PostRepository extends AbstractRepository
      * @param int $id
      * @param int $status
      * @return Post
-     * @throws RepositoryException
      * @throws RelationException
+     * @throws RepositoryException
      */
     public function findOneById(int $id, int $status): ?ContentObjectInterface
     {
@@ -139,6 +142,8 @@ class PostRepository extends AbstractRepository
                     `slug`=:slug, 
                     `preview`=:preview,
                     `content`=:content,
+                    `highlighted_content`=:highlighted_content, 
+                    `zip_content`=:zip_content,
                     `meta_data`=:meta_data, 
                     `post_banners`=:post_banners, 
                     `category_id`=:category_id, 
@@ -155,7 +160,9 @@ class PostRepository extends AbstractRepository
             ->bindValue(':title', $post->getTitle(), PDO::PARAM_STR_CHAR)
             ->bindValue(':slug', $post->getSlug(), PDO::PARAM_STR_CHAR)
             ->bindValue(':preview', $post->getPreview(), PDO::PARAM_STR)
-            ->bindValue(':content', $post->getContent(), PDO::PARAM_STR)
+            ->bindValue(':content', $post->isHighlight() ? null : $post->getContent(), PDO::PARAM_STR)
+            ->bindValue(':highlighted_content', $post->getHighlightContent(), PDO::PARAM_STR)
+            ->bindValue(':zip_content', $post->getZipContent(), PDO::PARAM_STR)
             ->bindValue(':meta_data', $post->getMetaData(), PDO::PARAM_STR)
             // TODO согласовать имена post_banners и getMediaUrls
             ->bindValue(':post_banners', $post->getBanners(), PDO::PARAM_STR)
@@ -172,15 +179,12 @@ class PostRepository extends AbstractRepository
     /**
      * @param int $postId
      * @return int
-     * @throws Exception
      */
     public function deleteById(int $postId)
     {
-        $command = $this->dao
+        return $this->dao
             ->createCommand("DELETE FROM posts WHERE id=:id")
-            ->bindValue(':id', $postId, PDO::PARAM_INT);
-
-        return $command->execute();
-
+            ->bindValue(':id', $postId, PDO::PARAM_INT)
+            ->execute();
     }
 }

@@ -6,6 +6,7 @@ namespace blog\tests\unit\post;
 use blog\entities\post\Post;
 use blog\managers\PostManager;
 use blog\repositories\post\PostRepository;
+use Codeception\Specify;
 use Codeception\Test\Unit;
 use common\fixtures\ActiveCategoriesFixture;
 use common\fixtures\PostFixture;
@@ -28,6 +29,8 @@ use Yii;
  */
 class PostUpdateTest extends Unit
 {
+    use Specify;
+
     protected $tester;
     private $manager;
     private $repo;
@@ -89,6 +92,7 @@ class PostUpdateTest extends Unit
 
         $this->manager->update($form, $post);
         $post = $this->manager->find($form);
+        $this->manager->delete($post);
 
         $this->assertNotEquals($postOld->category_id, $category->id);
 
@@ -102,7 +106,51 @@ class PostUpdateTest extends Unit
         expect($post->getMetaData()->getTitle())->equals('');
         expect($post->getMetaData()->getKeywords())->equals('');
         expect($post->getMetaData()->getDescription())->equals($form->meta_description);
+        expect($post->isHighlight())->false();
         expect($post->getStatus())->equals($form->status);
+
         expect($post->isActive())->false();
+    }
+
+    public function testHighlightUpdate()
+    {
+        // TODO важен порядок. Проблемы с удалением созданных записей
+        $this->specify('Unset highlight', function() {
+            $postOld = $this->tester->grabFixture('post', 1);
+            $post = $this->repo->findAnyById($postOld->id);
+            $form = $this->manager->getForm($post);
+
+            $form->title = 'Unset highlight';
+            $form->content = $this->faker->text(255);
+            $form->video_url =  $this->faker->imageUrl();
+
+            $this->manager->update($form, $post);
+            $post = $this->manager->find($form);
+            $this->manager->delete($post);
+
+            expect($post->isHighlight())->false();
+            expect($post->getContent())->equals($form->content);
+            expect($post->getZipContent())->null();
+            expect($post->getHighlightContent())->null();
+        });
+
+        $this->specify('Set highlight', function()  {
+            $postOld = $this->tester->grabFixture('post', 0);
+            $post = $this->repo->findAnyById($postOld->id);
+            $form = $this->manager->getForm($post);
+
+            $form->content .= '<pre class="_lang__php"><?="Hello World";?></pre>';
+            $form->video_url =  $this->faker->imageUrl();
+
+            $this->manager->update($form, $post);
+            $post = $this->manager->find($form);
+            $this->manager->delete($post);
+
+            expect($post->isHighlight())->true();
+            expect($post->getContent())->equals($form->content);
+            expect($post->getZipContent())->notNull();
+            expect($post->getHighlightContent())->stringContainsString('hljs php');
+            expect($post->getHighlightContent())->stringNotContainsString('_lang__php');
+        });
     }
 }

@@ -20,7 +20,9 @@
         "dmstr/yii2-adminlte-asset": "2.6.2",
         "ext-json": "*",
         "ext-pdo": "*",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-zlib": "*",
+        "scrivo/highlight.php": "^9.18"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

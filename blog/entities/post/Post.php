@@ -10,6 +10,7 @@ use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\common\interfaces\ContentBundleInterface;
 use blog\entities\common\MetaData;
 use blog\entities\post\exceptions\PostBlogException;
+use blog\entities\post\interfaces\HighlighterInterface;
 use blog\entities\post\interfaces\PostInterface;
 use blog\entities\relation\interfaces\HasRelation;
 use blog\entities\relation\traits\HasRelationTrait;
@@ -53,6 +54,8 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
     private $published_at;
     private $bannerType;
     private $isHighlight;
+    private $highlighted_content;
+    private $zip_content;
 
     /**
      * @param string $title
@@ -212,11 +215,22 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
     }
 
     /**
-     * @param Closure $closure
+     * @param HighlighterInterface $highlighter
+     * @throws PostBlogException
      */
-    public function setHighlight(Closure $closure): void
+    public function highlighting(HighlighterInterface $highlighter): void
     {
-        $this->isHighlight = $closure->__invoke($this->content);
+        $highlighter = $highlighter->highlighting($this->getContent());
+
+        if ($highlighter->isHighlighted()) {
+            $this->highlighted_content = $highlighter->getHighlighted();
+
+            if (!$this->zip_content = gzcompress($this->content, 8)) {
+                throw new PostBlogException('Failed to compress content data');
+            }
+        } else {
+            $this->highlighted_content = $this->zip_content = null;
+        }
     }
 
     /**
@@ -224,7 +238,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
      */
     public function isHighlight(): bool
     {
-        return $this->isHighlight ?? false;
+        return !empty($this->highlighted_content);
     }
 
     /**
@@ -255,6 +269,34 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
     {
         return $this->slug;
     }
+
+    /**
+     * @return string|null
+     */
+    public function getContent(): ?string
+    {
+        if ($this->isHighlight() && $this->content === null) {
+            $this->content = gzuncompress($this->getZipContent());
+        }
+        return $this->content;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getHighlightContent(): ?string
+    {
+        return $this->highlighted_content;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getZipContent(): ?string
+    {
+        return $this->zip_content;
+    }
+
 
     /**
      * @return PostBanners

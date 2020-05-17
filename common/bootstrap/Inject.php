@@ -2,6 +2,7 @@
 
 namespace common\bootstrap;
 
+use blog\entities\post\PostHighlighter;
 use blog\managers\AssignManager;
 use blog\managers\CategoryManager;
 use blog\managers\PostManager;
@@ -23,6 +24,7 @@ use Yii;
 use yii\base\BootstrapInterface;
 
 /**
+ * TODO для фронта сделать свои зависимости эти перенести в бэк
  * Class Inject
  * @package common\bootstrap
  */
@@ -77,7 +79,7 @@ class Inject implements BootstrapInterface
                 new AssignManager(new PostTagRepository($connection), new AssignService()),
                 new TagManager(new TagRepository($connection), new TagService()),
                 new MTransaction($connection),
-                new PostService());
+                new PostService(new PostHighlighter()));
         });
     }
 }
