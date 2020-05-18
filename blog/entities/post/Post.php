@@ -2,26 +2,20 @@
 
 namespace blog\entities\post;
 
-use blog\entities\category\Category;
-use blog\entities\category\interfaces\CategoryInterface;
+use blog\entities\category\{Category, interfaces\CategoryInterface};
 use blog\entities\common\abstracts\BlogRecordAbstract;
-use blog\entities\common\Date;
 use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\common\interfaces\ContentBundleInterface;
-use blog\entities\common\MetaData;
+use blog\entities\common\{MetaData, Date};
 use blog\entities\post\exceptions\PostBlogException;
-use blog\entities\post\interfaces\HighlighterInterface;
-use blog\entities\post\interfaces\PostInterface;
-use blog\entities\relation\interfaces\HasRelation;
-use blog\entities\relation\traits\HasRelationTrait;
+use blog\entities\post\interfaces\{HighlighterInterface, PostInterface};
+use blog\entities\relation\{interfaces\HasRelation, traits\HasRelationTrait};
 use blog\entities\tag\TagBundle;
 use blog\entities\user\User;
-use Closure;
 use Exception;
+use Ramsey\Uuid\Uuid;
 
 /**
- * TODO закрыть свойства
- *
  * Class Post
  * @package blog\entities\post
  */
@@ -37,6 +31,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
     public const BANNER_TYPE_IMAGE = 1;
     public const BANNER_TYPE_VIDEO = 2;
 
+    private $uuid;
     private $title;
     private $slug;
     /* @var PostBanners $post_banners */
@@ -78,6 +73,7 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
             $post = new self;
             $post->checkUserToActive($creator);
 
+            $post->uuid = Uuid::uuid4()->toString();
             $post->title = $title;
             $post->slug = $slug;
             $post->content = $content;
@@ -252,6 +248,14 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
         }
 
         $this->post_banners = $post_banners;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUuid(): string
+    {
+        return $this->uuid;
     }
 
     /**
