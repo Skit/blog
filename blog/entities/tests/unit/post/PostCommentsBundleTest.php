@@ -24,6 +24,7 @@ class PostCommentsBundleTest extends Base
             [
                 'id' => 1,
                 'text' => 'Comment 1 parent',
+                'post' => $post,
                 'creator' => $this->activeUser,
                 'parentComment' => null,
                 'createdAt' => Date::getFormatNow(),
@@ -32,6 +33,7 @@ class PostCommentsBundleTest extends Base
             [
                 'id' => 12,
                 'text' => 'Comment 2 reply to parent 1',
+                'post' => $post,
                 'creator' => $this->activeUser,
                 'parentComment' => 1,
                 'createdAt' => Date::getFormatNow(),
@@ -40,6 +42,7 @@ class PostCommentsBundleTest extends Base
             [
                 'id' => 32,
                 'text' => 'Comment 3 reply to parent 1',
+                'post' => $post,
                 'creator' => $this->activeUser,
                 'parentComment' => 1,
                 'createdAt' => Date::getFormatNow(),
@@ -56,11 +59,12 @@ class PostCommentsBundleTest extends Base
         /* @var $post Post */
         $post = Stub::make(Post::class, ['status' => Post::STATUS_INACTIVE]);
 
-        $this->expectExceptionMessage('Post must be active');
+        $this->expectExceptionMessage('must be active for this operation');
         $post->setComments(new CommentBundle([
             [
                 'id' => 1,
                 'text' => 'Comment 1 parent',
+                'post' => $post,
                 'creator' => $this->activeUser,
                 'parentComment' => null,
                 'createdAt' => Date::getFormatNow(),

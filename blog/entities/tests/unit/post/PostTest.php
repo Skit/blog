@@ -11,19 +11,19 @@ use Codeception\Stub;
 use Codeception\Test\Unit;
 
 /**
+ * TODO зарефакторить
  * TODO разбить тест на файлы создание, редактирование...
+ * TODO использовать Specify
+ * TODO вторичные объекты создать в базовом классе
  * Class PostTest
  * @package blog\entities\tests\unit\post
  */
 class PostTest extends Unit
 {
-
     /* @var $activeUser User */
     private $activeUser;
-
     /* @var $activeCategory User */
     private $activeCategory;
-
     /* @var $hasImageMediaUrls PostBanners */
     private $hasImageMediaUrls;
 
@@ -32,13 +32,14 @@ class PostTest extends Unit
         $this->activeCategory = Stub::make(Category::class, ['isActive' => true]);
         $this->activeUser = Stub::make(User::class, ['username' => 'Bob' ,'status' => User::STATUS_ACTIVE, 'id' => 1]);
         $this->hasImageMediaUrls = Stub::make(PostBanners::class, ['hasImage' => true]);
+
         parent::setUp();
     }
 
     public function testCreateFull()
     {
         $metaData = new MetaData('Some seo title', 'Some seo desc', 'Some seo keys');
-        $mediaUrls = (new PostBanners())->setImageUrl('https://some.image/url')->setVideoUrl('https://some.video/url');
+        $mediaUrls = PostBanners::create('https://some.image/url', 'https://some.video/url');
 
         $post = Post::create('Title', 'Slug', $mediaUrls, 'Some content',
             'Some preview',  $metaData, $this->activeCategory, $this->activeUser, Date::getFormatNow(), Post::STATUS_DRAFT);
@@ -81,13 +82,13 @@ class PostTest extends Unit
 
     public function testEdit()
     {
-        $mediaUrls = (new PostBanners())->setVideoUrl('https://some.video/url');
+        $mediaUrls = PostBanners::create(null,  'https://some.video/url');
         $metaData = new MetaData('Some seo title', 'Some seo desc', 'Some seo keys');
 
         $post = Post::create('Title', 'Slug', $mediaUrls, 'Some content',
             'Some preview',  $metaData, $this->activeCategory, $this->activeUser, Date::getFormatNow(), Post::STATUS_DRAFT);
 
-        $mediaUrls = (new PostBanners())->setImageUrl('https://edit.image/url')->setVideoUrl('https://edit.video/url');
+        $mediaUrls = PostBanners::create('https://edit.image/url', 'https://edit.video/url');
         $metaData = new MetaData('Edit seo title', 'Edit seo desc', 'Edit seo keys');
 
         $post->setBannerType(Post::BANNER_TYPE_VIDEO);
@@ -116,7 +117,7 @@ class PostTest extends Unit
 
     public function testImageUrl()
     {
-        $post = Stub::make(Post::class, ['mediaUrls' => (new PostBanners())->setImageUrl('https://some.image/url')]);
+        $post = Stub::make(Post::class, ['post_banners' => PostBanners::create('https://some.image/url', null)]);
 
         $this->expectExceptionMessage('Post hasn`t a video url');
         $post->setBannerType(Post::BANNER_TYPE_VIDEO);
@@ -125,9 +126,9 @@ class PostTest extends Unit
         expect($post->getBannerType())->equals(Post::BANNER_TYPE_IMAGE);
     }
 
-    public function testImageVideo()
+    public function testVideoUrl()
     {
-        $post = Stub::make(Post::class, ['mediaUrls' => (new PostBanners())->setVideoUrl('https://some.video/url')]);
+        $post = Stub::make(Post::class, ['post_banners' => PostBanners::create(null, 'https://some.video/url')]);
 
         $this->expectExceptionMessage('Post hasn`t an image url');
         $post->setBannerType(Post::BANNER_TYPE_IMAGE);
@@ -138,7 +139,7 @@ class PostTest extends Unit
 
     public function testWithoutMetaData()
     {
-        $post = Stub::make(Post::class, ['metaData' => new MetaData()]);
+        $post = Stub::make(Post::class, ['meta_data' => new MetaData()]);
 
         expect($post->getMetaData()->getTitle())->null();
         expect($post->getMetaData()->getDescription())->null();
@@ -171,26 +172,25 @@ class PostTest extends Unit
 
     public function testIsHighlightTrue()
     {
+        $content = '<code class="php">Is highlight text</code>';
         /* @var $post  Post */
-        $post = Stub::make(Post::class, ['content' => '<code class="php">Is highlight text</code>']);
-
-        $post->setHighlight(function (string $content) {
-             return preg_match('~\<code\s+class=[\"\'](\w+)[\"\']\>.*\<\/code\>~', $content) > 0;
-        });
+        $post = Stub::make(Post::class, [
+            'content' => null,
+            'highlighted_content' => $content,
+            'zip_content' => gzcompress($content)]);
 
         expect($post->isHighlight())->true();
+        expect($post->getContent())->equals($content);
     }
 
     public function testIsHighlightFalse()
     {
         /* @var $post  Post */
-        $post = Stub::make(Post::class, ['content' => '<code>Is not highlight text</code>']);
-
-        $post->setHighlight(function (string $content) {
-             return preg_match('~\<code\s+class=[\"\'](\w+)[\"\']\>.*\<\/code\>~', $content) > 0;
-        });
+        $post = Stub::make(Post::class, ['content' => 'Is not highlight text']);
 
         expect($post->isHighlight())->false();
+        expect($post->getZipContent())->null();
+        expect($post->getHighlightContent())->null();
     }
 
 }
