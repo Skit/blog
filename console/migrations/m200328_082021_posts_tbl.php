@@ -14,6 +14,8 @@ class m200328_082021_posts_tbl extends Migration
     {
         $this->createTable('posts', [
             'id' => $this->primaryKey()->unsigned(),
+            // TODO пересобрать всю фигню на uuid вместо INT PRIMARY KEY
+            'uuid' => $this->string(36)->notNull()->unique(),
             'title' => $this->string(255)->notNull(),
             'slug' => $this->string(255)->notNull(),
             'preview' => $this->string(500),
@@ -36,6 +38,7 @@ class m200328_082021_posts_tbl extends Migration
         $this->createIndex('idx-posts-creator_id', 'posts', 'creator_id');
         $this->createIndex('idx-post-category_id', 'posts', 'category_id');
         $this->createIndex('idx-post-published_at', 'posts', 'published_at');
+        $this->createIndex('idx-posts-uuid', 'posts', 'uuid', true);
 
         $this->addForeignKey(
             'fk-post-category_id-category-id',

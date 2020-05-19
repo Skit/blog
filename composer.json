@@ -22,7 +22,8 @@
         "ext-pdo": "*",
         "ext-curl": "*",
         "ext-zlib": "*",
-        "scrivo/highlight.php": "^9.18"
+        "scrivo/highlight.php": "^9.18",
+        "ramsey/uuid": "^4.0@dev"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",
