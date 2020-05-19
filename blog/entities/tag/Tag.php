@@ -18,6 +18,7 @@ class Tag extends ContentObjectAbstract
     private $frequency;
 
     /**
+     * TODO сделать параметры объектами как в комментариях
      * @param int|null $pk
      * @param string $title
      * @param string $slug
@@ -26,6 +27,7 @@ class Tag extends ContentObjectAbstract
      * @param string|null $updated_at
      * @param int $status
      * @return Tag
+     * @throws Exception
      */
     public static function createFull(?int $pk, string $title, string $slug, ?int $frequency,
                                       ?string $created_at, ?string $updated_at, int $status)

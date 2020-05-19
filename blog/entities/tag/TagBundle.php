@@ -9,7 +9,6 @@ use blog\entities\tag\exceptions\TagException;
 use Closure;
 
 /**
- * TODO поменять исключение на BundleException
  * Class TagBundle
  *
  * @property Tag[] $bundle
@@ -18,6 +17,7 @@ use Closure;
 class TagBundle extends ObjectBundle
 {
     /**
+     * TODO лучше сделать с функцией по умолчанию
      * TagBundle constructor.
      * @param array $tags
      * @param Closure|null $closure
