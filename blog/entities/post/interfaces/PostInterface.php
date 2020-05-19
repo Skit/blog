@@ -28,6 +28,8 @@ interface PostInterface
 
     public function isHighlight(): bool;
 
+    public function getUuid(): string;
+
     public function getHighlightContent(): ?string;
 
     public function getZipContent(): ?string;

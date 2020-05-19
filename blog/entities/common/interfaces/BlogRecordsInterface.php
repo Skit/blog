@@ -14,5 +14,12 @@ interface BlogRecordsInterface
 
     public function getCreator(): User;
 
+    /**
+     * @deprecated
+     * @see checkActiveObject
+     * @param User $user
+     */
     public function checkUserToActive(User $user): void;
+
+    public function checkActiveObject(ContentObjectInterface $object): void;
 }

@@ -5,6 +5,7 @@ namespace blog\entities\common\abstracts;
 
 use blog\entities\common\exceptions\BlogRecordsException;
 use blog\entities\common\interfaces\BlogRecordsInterface;
+use blog\entities\common\interfaces\ContentObjectInterface;
 use blog\entities\user\User;
 
 /**
@@ -37,6 +38,18 @@ abstract class BlogRecordAbstract extends ContentObjectAbstract implements BlogR
     }
 
     /**
+     * @param ContentObjectInterface $object
+     * @throws BlogRecordsException
+     */
+    public function checkActiveObject(ContentObjectInterface $object): void
+    {
+        if (!$object->isActive()) {
+            throw new BlogRecordsException(get_class($object) . ' must be active for this operation');
+        }
+    }
+
+    /**
+     * @deprecated
      * @param User $user
      * @throws BlogRecordsException
      */

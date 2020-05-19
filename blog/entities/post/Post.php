@@ -369,6 +369,8 @@ class Post extends BlogRecordAbstract implements PostInterface, HasRelation
     }
 
     /**
+     * @deprecated
+     * @see getComments
      * @return int
      */
     public function getCountComments(): int
