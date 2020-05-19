@@ -12,6 +12,8 @@ interface CommentInterface
 
     public function hasChild(): bool;
 
+    public function putIn(Comment $comment): void;
+
     public function setParent(Comment $comment): void;
 
     public function setChild(Comment $comment): void;

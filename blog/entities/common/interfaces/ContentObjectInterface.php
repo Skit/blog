@@ -21,6 +21,8 @@ interface ContentObjectInterface
 
     public function isActive(): bool;
 
+    public function isDelete(): bool;
+
     public function activate(): void;
 
     public function deactivate(): void;

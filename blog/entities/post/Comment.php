@@ -29,52 +29,51 @@ class Comment extends BlogRecordAbstract implements CommentInterface, HasRelatio
     private $post;
 
     /**
-     * @param string $content
+     * @param Text $text
+     * @param int $status
+     * @param Comment $parentComment
      * @param Post $post
      * @param User $creator
-     * @param Comment $parentComment
-     * @param int $status
      * @return static
      * @throws CommentException
      */
-    public static function create(string $content, int $status, ?Comment $parentComment, Post $post, User $creator): self
+    public static function create(Text $text, int $status, ?Comment $parentComment, Post $post, User $creator): self
     {
-        return self::construct(null, $content, $post,
-            $creator, $parentComment, (new Date())->getFormatted(), null, $status);
+        return self::construct(0, $text, $post,
+            $creator, $parentComment, (new Dates())->asNew(), $status);
     }
 
     /**
      * TODO аргументы идут в порядке, как в базе. Может сделать обязательные впереди, все остальные null по умолчанию
      * @param int|null $id
-     * @param string $content
+     * @param Text $text
      * @param Post $post
      * @param User $creator
      * @param Comment|null $parentComment
-     * @param string $createdAt
-     * @param string|null $updatedAt
+     * @param Dates $dates
      * @param int $status
      * @return static
      * @throws CommentException
      */
-    public static function construct(?int $id, string $content, Post $post, User $creator, ?Comment $parentComment,
-                                     ?string $createdAt, ?string $updatedAt, int $status): self
+    public static function construct(int $id, Text $text, Post $post, User $creator, ?Comment $parentComment,
+                                    Dates $dates, int $status): self
     {
         try {
             $comment = new self();
+
+            $comment->checkActiveObject($post);
+            $comment->checkActiveObject($creator);
+
             $comment->id = $id;
-            $comment->checkUserToActive($creator);
-            // TODO переделать, либо задаем объекты либо айдишники
             $comment->creator_id = $creator->getPrimaryKey();
+
             $comment->post = $post;
             $comment->user = $creator;
-
-            // TODO валидация должа что-то возвращать. переделать
-            $comment->validateText($content);
-            $comment->setContent($content);
+            $comment->content = $text->get();
 
             $comment->status = $status;
-            $comment->created_at = $createdAt;
-            $comment->updated_at = $updatedAt;
+            $comment->created_at = $dates->getCreatedAt();
+            $comment->updated_at = $dates->getUpdatedAt();
 
             $comment->createHasCode();
 
@@ -90,65 +89,46 @@ class Comment extends BlogRecordAbstract implements CommentInterface, HasRelatio
     }
 
     /**
-     * @param string $content
+     * @param Text $text
      * @param Comment|null $parentComment
      * @param int $status
      * @throws CommentException
      */
-    public function edit(string $content, ?Comment $parentComment, int $status): void
+    public function edit(Text $text, ?Comment $parentComment, int $status): void
     {
         try {
-            // TODO вынести валидацию из сеттера?
-            $this->setContent($content);
+            $this->content = $text->get();
             $this->status = $status;
-            $this->updated_at = (new Date())->getFormatted();
+            $this->updated_at = (new Dates())->asEdit()->getUpdatedAt();
 
             $this->createHasCode();
 
             if ($parentComment) {
-                $this->setParent($parentComment);
-                $parentComment->setChild($this);
+                $this->putIn($parentComment);
             }
+
         } catch (Exception $e) {
-            throw new CommentException("Fail to update comment with:\r\n{$e->getMessage()}");
+            throw new CommentException("Fail to update comment with: {$e->getMessage()}");
         }
     }
 
     /**
-     * @param string $content
-     * @return void
+     * @param Comment $parent
      * @throws CommentException
      */
-    private function validateText(string $content): void
+    public function putIn(Comment $parent): void
     {
-        // TODO вынести из объекта число символов
-        if (mb_strlen($content) > 300) {
-            throw new CommentException("Maximum number of characters is: 300");
-        }
-
-        if (preg_match_all('~((?:https?)?(?:[\S]{3,}\.[\S]{2,}))~', $content, $match)) {
-            // TODO вынести из объекта число ссылок
-            if (count($match[0]) > 5) {
-                throw new CommentException('Your comment looks like SPAM');
-            }
-        }
+        $this->setParent($parent);
+        $parent->setChild($this);
     }
 
     /**
-     *
+     * @deprecated
+     * TODO переделать на uuid
      */
     public function createHasCode(): void
     {
         $this->hashCode = spl_object_hash($this);
-    }
-
-    /**
-     * @param string $content
-     * @throws CommentException
-     */
-    public function setContent(string $content): void
-    {
-        $this->content = $content;
     }
 
     /**

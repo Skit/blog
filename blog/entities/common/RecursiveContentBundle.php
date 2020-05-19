@@ -38,4 +38,9 @@ class RecursiveContentBundle extends RecursiveBundleAbstract
 
         return null;
     }
+
+    public function getFieldsString(string $field, string $quote = '"', string $delimiter = ','): string
+    {
+        // TODO: Implement getFieldsString() method.
+    }
 }

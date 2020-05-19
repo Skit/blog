@@ -10,56 +10,36 @@ use blog\entities\tests\unit\comment\Base;
  */
 class CommentBundleTest extends Base
 {
-   /* public function testCreateBundle()
+    public function testWithChild()
     {
         $comments = [
             [
-                'text' => 'Comment 1',
-                'creator' => $this->activeUser,
-                'parentComment' => null,
-                'status' => Comment::STATUS_ACTIVE,
-            ],
-            [
-                'text' => 'Comment 2',
-                'creator' => $this->activeUser,
-                'parentComment' => null,
-                'status' => Comment::STATUS_ACTIVE,
-            ]
-        ];
-
-        $bundle = new CommentBundle($comments);
-
-        expect($bundle->getCount())->equals(2);
-        expect($bundle->getBundle()[0]->getContent())->equals('Comment 1');
-        expect($bundle->getBundle()[1]->getContent())->equals('Comment 2');
-    }
-
-    public function testCreateParentWithChild()
-    {
-        $comments = [
-            [
+                'id' => $parentId = $id = 1,
                 'text' => 'Comment 1 parent',
                 'creator' => $this->activeUser,
+                'post' => $this->activePost,
                 'parentComment' => null,
                 'status' => Comment::STATUS_ACTIVE,
             ],
             [
+                'id' => ++$id,
                 'text' => 'Comment 2 reply to parent 1',
                 'creator' => $this->activeUser,
-                'parentComment' => 1,
+                'post' => $this->activePost,
+                'parentComment' => $parentId,
                 'status' => Comment::STATUS_ACTIVE,
             ],
             [
+                'id' => ++$id,
                 'text' => 'Comment 3 reply to parent 1',
                 'creator' => $this->activeUser,
-                'parentComment' => 1,
+                'post' => $this->activePost,
+                'parentComment' => $parentId,
                 'status' => Comment::STATUS_ACTIVE,
             ],
         ];
 
         $bundle = new CommentBundle($comments);
-
-        expect($bundle->getCount())->equals(3);
 
         expect($bundle->getBundle()[0]->getContent())->equals('Comment 1 parent');
         expect($bundle->getBundle()[0]->hasChild())->true();
@@ -68,12 +48,13 @@ class CommentBundleTest extends Base
         expect($bundle->getBundle()[0]->getChildren()[1]->getContent())->equals('Comment 3 reply to parent 1');
     }
 
-    public function testCreateParentWithChildWithChild()
+    public function testCreate()
     {
         $comments = [
             [
                 'id' => 1,
                 'text' => 'Comment 1 parent',
+                'post' => $this->activePost,
                 'creator' => $this->activeUser,
                 'parentComment' => null,
                 'createdAt' => Date::getFormatNow(),
@@ -82,6 +63,7 @@ class CommentBundleTest extends Base
             [
                 'id' => 2,
                 'text' => 'Comment 2 reply to parent 1',
+                'post' => $this->activePost,
                 'creator' => $this->activeUser,
                 'parentComment' => 1,
                 'createdAt' => Date::getFormatNow(),
@@ -90,6 +72,7 @@ class CommentBundleTest extends Base
             [
                 'id' => 3,
                 'text' => 'Comment 3 reply to child 2',
+                'post' => $this->activePost,
                 'creator' => $this->activeUser,
                 'parentComment' => 2,
                 'createdAt' => Date::getFormatNow(),
@@ -99,95 +82,37 @@ class CommentBundleTest extends Base
 
         $bundle = new CommentBundle($comments);
 
-        expect($bundle->getCount())->equals(3);
+        $this->specify('Get from bundle', function () use ($bundle) {
+            $comment = $bundle->findByPrimaryKey(3);
 
-        expect($bundle->getBundle()[0]->getContent())->equals('Comment 1 parent');
-        expect($bundle->getBundle()[0]->hasChild())->true();
-        expect($bundle->getBundle()[0]->hasParent())->false();
+            expect($comment->getPrimaryKey())->equals(3);
+            expect($comment->getContent())->equals('Comment 3 reply to child 2');
+        });
 
-        expect($bundle->getBundle()[0]->getChildren()[0]->getContent())->equals('Comment 2 reply to parent 1');
-        expect($bundle->getBundle()[0]->getChildren()[0]->hasChild())->true();
-        expect($bundle->getBundle()[0]->getChildren()[0]->hasParent())->true();
-        expect($bundle->getBundle()[0]->getChildren()[0]->getParent()->getContent())->equals('Comment 1 parent');
+        $this->specify('Parent with child with child', function () use ($bundle) {
+            expect($bundle->getCount())->equals(3);
+            expect($bundle->getBundle()[0]->getContent())->equals('Comment 1 parent');
+            expect($bundle->getBundle()[0]->hasChild())->true();
+            expect($bundle->getBundle()[0]->hasParent())->false();
 
-        expect($bundle->getBundle()[0]->getChildren()[0]->getChildren()[0]->getContent())->equals('Comment 3 reply to child 2');
-        expect($bundle->getBundle()[0]->getChildren()[0]->getChildren()[0]->hasChild())->false();
-        expect($bundle->getBundle()[0]->getChildren()[0]->getChildren()[0]->hasParent())->true();
-        expect($bundle->getBundle()[0]->getChildren()[0]->getChildren()[0]->getParent()->getContent())->equals('Comment 2 reply to parent 1');
+            expect($bundle->getBundle()[0]->getChildren()[0]->getContent())->equals('Comment 2 reply to parent 1');
+            expect($bundle->getBundle()[0]->getChildren()[0]->hasChild())->true();
+            expect($bundle->getBundle()[0]->getChildren()[0]->hasParent())->true();
+            expect($bundle->getBundle()[0]->getChildren()[0]->getParent()->getContent())->equals('Comment 1 parent');
+
+            expect($bundle->getBundle()[0]->getChildren()[0]->getChildren()[0]->getContent())->equals('Comment 3 reply to child 2');
+            expect($bundle->getBundle()[0]->getChildren()[0]->getChildren()[0]->hasChild())->false();
+            expect($bundle->getBundle()[0]->getChildren()[0]->getChildren()[0]->hasParent())->true();
+            expect($bundle->getBundle()[0]->getChildren()[0]->getChildren()[0]->getParent()->getContent())->equals('Comment 2 reply to parent 1');
+        });
+
+        $this->specify('Delete from bundle', function () use ($bundle) {
+            $comment = $bundle->findByPrimaryKey(3);
+
+            expect($comment->isActive())->true();
+            expect($bundle->removeByPrimaryKey(3))->true();
+            expect($comment->isDelete())->true();
+            expect($bundle->removeByPrimaryKey(8))->null();
+        });
     }
-
-    public function testRemoveFromBundle()
-    {
-        $comments = [
-            [
-                'id' => 1,
-                'text' => 'Comment 1 parent',
-                'creator' => $this->activeUser,
-                'parentComment' => null,
-                'createdAt' => Date::getFormatNow(),
-                'status' => Comment::STATUS_ACTIVE,
-            ],
-            [
-                'id' => 2,
-                'text' => 'Comment 2 reply to parent 1',
-                'creator' => $this->activeUser,
-                'parentComment' => 1,
-                'createdAt' => Date::getFormatNow(),
-                'status' => Comment::STATUS_ACTIVE,
-            ],
-            [
-                'id' => 3,
-                'text' => 'Comment 3 reply to child 2',
-                'creator' => $this->activeUser,
-                'parentComment' => 2,
-                'createdAt' => Date::getFormatNow(),
-                'status' => Comment::STATUS_ACTIVE,
-            ],
-            [
-                'id' => 4,
-                'text' => 'Comment 4 parent',
-                'creator' => $this->activeUser,
-                'parentComment' => null,
-                'createdAt' => Date::getFormatNow(),
-                'status' => Comment::STATUS_ACTIVE,
-            ],
-        ];
-
-        $bundle = new CommentBundle($comments);
-
-        expect($bundle->removeByPrimaryKey(3))->true();
-        expect($bundle->removeByPrimaryKey(8))->null();
-    }
-
-    public function testGetFromBundle()
-    {
-        $comments = [
-            [
-                'id' => 1,
-                'text' => 'Comment 1 parent',
-                'creator' => $this->activeUser,
-                'parentComment' => null,
-                'createdAt' => Date::getFormatNow(),
-                'status' => Comment::STATUS_ACTIVE,
-            ],
-            [
-                'id' => 2,
-                'text' => 'Comment 2 reply to parent 1',
-                'creator' => $this->activeUser,
-                'parentComment' => 1,
-                'createdAt' => Date::getFormatNow(),
-                'status' => Comment::STATUS_ACTIVE,
-            ],
-            [
-                'id' => 3,
-                'text' => 'Comment 3 reply to child 2',
-                'creator' => $this->activeUser,
-                'parentComment' => 2,
-                'createdAt' => Date::getFormatNow(),
-                'status' => Comment::STATUS_ACTIVE,
-            ],
-        ];
-
-        expect((new CommentBundle($comments))->findByPrimaryKey(3)->getPrimaryKey())->equals(3);
-    }*/
 }

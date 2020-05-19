@@ -56,6 +56,15 @@ abstract class ContentObjectAbstract implements ContentObjectInterface
     {
         return $this->getStatus() === static::STATUS_ACTIVE;
     }
+
+    /**
+     * @return bool
+     */
+    public function isDelete(): bool
+    {
+        return $this->getStatus() === static::STATUS_DELETED;
+    }
+
     /**
      * @throws BlogRecordsException
      */
