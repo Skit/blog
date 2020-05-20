@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 
 namespace blog\components\PathReplacer;
@@ -9,6 +9,7 @@ namespace blog\components\PathReplacer;
  */
 class PathReplacer
 {
+    private $path;
     private $skipped = [];
     private $rootVariables;
     private $localVariables;
@@ -42,7 +43,7 @@ class PathReplacer
      * @return string
      * @throws PathReplacerExceptions
      */
-    public function replace(string $path, bool $throwIfSkipped = true): string
+    public function replace(string $path, bool $throwIfSkipped = true): self
     {
         if ($path) {
             $pathNS = $this->getPathNamespace($path);
@@ -62,7 +63,40 @@ class PathReplacer
             }
         }
 
-        return $path;
+        $this->path = $path;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function existIncrement(): string
+    {
+        if (is_dir($this->path) || file_exists($this->path)) {
+            $pathInfo = pathinfo($this->path);
+
+            if (preg_match('~_(?<c>\d+)~', $pathInfo['filename'], $m)) {
+                $incremented = preg_replace('~_\d+$~', '_' . ((int) $m['c'] + 1), $pathInfo['filename']);
+            } else {
+                $incremented = "{$pathInfo['filename']}_1";
+            }
+
+            $incremented = $incremented . (!empty($pathInfo['extension']) ? ".{$pathInfo['extension']}" : '');
+            $this->path = preg_replace("~{$pathInfo['basename']}$~", $incremented, $this->path);
+
+            return $this->existIncrement();
+        }
+
+        return $this->path;
+    }
+
+    /**
+     * @return string
+     */
+    public function get(): string
+    {
+        return $this->path;
     }
 
     /**
