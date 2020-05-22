@@ -4,11 +4,11 @@
 namespace blog\services;
 
 use backend\models\PostForm;
+use blog\components\highlighter\HighlighterInterface;
 use blog\entities\category\Category;
 use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\common\MetaData;
 use blog\entities\post\exceptions\PostBlogException;
-use blog\entities\post\interfaces\HighlighterInterface;
 use blog\entities\post\Post;
 use blog\entities\post\PostBanners;
 use blog\entities\user\User;

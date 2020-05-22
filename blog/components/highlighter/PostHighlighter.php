@@ -1,10 +1,8 @@
 <?php
 
 
-namespace blog\entities\post;
+namespace blog\components\highlighter;
 
-
-use blog\entities\post\interfaces\HighlighterInterface;
 use Highlight\Highlighter;
 use stdClass;
 

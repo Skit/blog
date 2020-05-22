@@ -1,7 +1,7 @@
 <?php
 
 
-namespace blog\entities\post\interfaces;
+namespace blog\components\highlighter;
 
 /**
  * Interface HighlightInterface

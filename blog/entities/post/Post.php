@@ -2,13 +2,14 @@
 
 namespace blog\entities\post;
 
+use blog\components\highlighter\HighlighterInterface;
 use blog\entities\category\{Category, interfaces\CategoryInterface};
 use blog\entities\common\abstracts\BlogRecordAbstract;
 use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\common\interfaces\ContentBundleInterface;
 use blog\entities\common\{MetaData, Date};
 use blog\entities\post\exceptions\PostBlogException;
-use blog\entities\post\interfaces\{HighlighterInterface, PostInterface};
+use blog\entities\post\interfaces\PostInterface;
 use blog\entities\relation\{interfaces\HasRelation, traits\HasRelationTrait};
 use blog\entities\tag\TagBundle;
 use blog\entities\user\User;

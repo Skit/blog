@@ -2,11 +2,10 @@
 
 namespace blog\entities\post\interfaces;
 
+use blog\components\highlighter\HighlighterInterface;
 use blog\entities\common\interfaces\ContentBundleInterface;
 use blog\entities\post\CommentBundle;
 use blog\entities\post\PostBanners;
-use blog\entities\tag\TagBundle;
-use Closure;
 
 /**
  * Interface PostInterface
