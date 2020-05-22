@@ -2,23 +2,18 @@
 
 namespace common\bootstrap;
 
+use blog\components\ImageResizer\{ImageResizer, driver\ImagickDriver};
+use blog\components\ImageResizer\settings\{ImagickSettings, Jpeg, Modulate, Resize, Sharp};
 use blog\entities\post\PostHighlighter;
-use blog\managers\AssignManager;
-use blog\managers\CategoryManager;
-use blog\managers\PostManager;
-use blog\managers\TagManager;
+use blog\managers\{AssignManager, CategoryManager, PostManager, TagManager};
 use blog\repositories\category\CategoriesRepository;
 use blog\repositories\post\PostRepository;
 use blog\repositories\postTag\PostTagRepository;
 use blog\repositories\tag\TagRepository;
 use blog\repositories\users\UsersRepository;
-use blog\services\AssignService;
-use blog\services\CategoryService;
-use blog\services\PostService;
-use blog\services\TagService;
-use common\components\MCommand;
-use common\components\MConnection;
-use common\components\MTransaction;
+use blog\services\{AssignService, CategoryService, PostService, TagService};
+use common\components\{MCommand, MConnection, MTransaction};
+use Imagick;
 use PDO;
 use Yii;
 use yii\base\BootstrapInterface;
@@ -43,7 +38,6 @@ class Inject implements BootstrapInterface
         $container->setSingleton(MConnection::class, function (): MConnection
         {
             $connection =  new MConnection();
-
             $connection->charset = 'utf8mb4';
             $connection->username = 'root';
             $connection->password = 'secret';
@@ -80,6 +74,23 @@ class Inject implements BootstrapInterface
                 new TagManager(new TagRepository($connection), new TagService()),
                 new MTransaction($connection),
                 new PostService(new PostHighlighter()));
+        });
+
+        /**
+         * ImageResizer
+         */
+        $container->setSingleton(ImageResizer::class, function (): ImageResizer
+        {
+            return new ImageResizer(
+                new ImagickDriver(
+                    new ImagickSettings(
+                        new Jpeg(82),
+                        new Resize(0.99, true, Imagick::FILTER_TRIANGLE),
+                        new Sharp(0.25,0.25, 25, 0.005),
+                        new Modulate(80, 60, 100)
+                    )
+                )
+            );
         });
     }
 }

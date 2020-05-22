@@ -22,6 +22,7 @@
         "ext-pdo": "*",
         "ext-curl": "*",
         "ext-zlib": "*",
+        "ext-imagick": "*",
         "scrivo/highlight.php": "^9.18",
         "ramsey/uuid": "^4.0@dev"
     },
