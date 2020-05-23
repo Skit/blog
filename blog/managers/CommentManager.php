@@ -7,6 +7,8 @@ use backend\models\CommentForm;
 use blog\entities\post\Comment;
 use blog\entities\post\exceptions\CommentException;
 use blog\entities\post\Post;
+use blog\entities\post\Text;
+use blog\entities\relation\exceptions\RelationException;
 use blog\entities\user\User;
 use blog\repositories\comment\CommentRepository;
 use blog\repositories\exceptions\RepositoryException;
@@ -46,6 +48,7 @@ class CommentManager
      * @return Comment
      * @throws CommentException
      * @throws RepositoryException
+     * @throws RelationException
      */
     public function create(CommentForm $comment): Comment
     {
@@ -53,7 +56,7 @@ class CommentManager
         $creator = $this->userRepository->findOneById($comment->creator_id, User::STATUS_ACTIVE);
         $parent = $this->repository->findOneByPostId($comment->post_id, $comment->parent_id, Comment::STATUS_ACTIVE);
 
-        $comment = Comment::create($comment->content, $comment->status, $parent, $post, $creator);
+        $comment = Comment::create(new Text($comment->content), $comment->status, $parent, $post, $creator);
 
         $comment->setPrimaryKey($this->repository->create($comment));
 

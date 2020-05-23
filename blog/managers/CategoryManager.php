@@ -5,7 +5,6 @@ namespace blog\managers;
 use backend\models\CategoriesForm;
 use blog\entities\category\Category;
 use blog\entities\common\exceptions\BlogRecordsException;
-use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\user\User;
 use blog\repositories\category\CategoriesRepository;
 use blog\repositories\exceptions\RepositoryException;
@@ -34,9 +33,8 @@ class CategoryManager
      * @param User $creator
      * @param CategoriesForm $form
      * @return Category
-     * @throws MetaDataExceptions
-     * @throws RepositoryException
      * @throws BlogRecordsException
+     * @throws RepositoryException
      */
     public function create(User $creator, CategoriesForm $form): Category
     {
@@ -49,7 +47,7 @@ class CategoryManager
             $form->status
         );
 
-        $category->setPrimaryKey($this->repository->create($category));
+        $this->repository->create($category);
 
         return $category;
     }

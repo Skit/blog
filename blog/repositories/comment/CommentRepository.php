@@ -7,7 +7,9 @@ namespace blog\repositories\comment;
 use blog\entities\common\interfaces\ContentObjectInterface;
 use blog\entities\post\Comment;
 use blog\entities\post\CommentBundle;
+use blog\entities\post\Dates;
 use blog\entities\post\Post;
+use blog\entities\post\Text;
 use blog\entities\relation\exceptions\RelationException;
 use blog\entities\relation\RelationSql;
 use blog\entities\user\User;
@@ -56,6 +58,8 @@ class CommentRepository extends AbstractRepository
      * @param int $id
      * @param int $status
      * @return Comment
+     * @throws RelationException
+     * @throws RepositoryException
      */
     public function findOneById(int $id, int $status): ContentObjectInterface
     {
@@ -121,7 +125,7 @@ class CommentRepository extends AbstractRepository
                 ->withClass('cp', Comment::class);
 
         try {
-            $bundle = new CommentBundle();
+            $bundle = new CommentBundle([]);
             // TODO возвращает пустой массив с null по количеству записей. подумать над проверкой результата
             $this->dao->createCommandWithRelation($prepare)
                 ->bindValue(':post_id', $post->getPrimaryKey(), PDO::PARAM_INT)
@@ -129,10 +133,10 @@ class CommentRepository extends AbstractRepository
                 ->fetchAllObject(function(...$args) use ($bundle, $post) {
                         if ($args[9]) {
                             $parentCreator = User::construct($args[11], $args[12], $args[13], null, null, null, null, $args[14], null, null, null, null);
-                            $parentComment = Comment::construct($args[9], '', $post, $parentCreator, null, null, null, $args[10]);
+                            $parentComment = Comment::construct($args[9], new Text(''), $post, $parentCreator, null, new Dates(), $args[10]);
                         }
                         $creator = User::construct($args[5], $args[6], $args[7], null, null, null, null, $args[8], null, null, null, null);
-                        $bundle->append(Comment::construct($args[0], $args[1], $post, $creator, $parentComment ?? null, $args[2], $args[3], $args[4]));
+                        $bundle->append(Comment::construct($args[0], new Text($args[1]), $post, $creator, $parentComment ?? null, new Dates($args[2], $args[3]), $args[4]));
                     });
         } catch (Exception $e) {
             // TODO Переписать сам экзепшн, чтобы он выдавал нужный нормальный мессэдж.
@@ -140,6 +144,35 @@ class CommentRepository extends AbstractRepository
         }
 
        return $bundle;
+    }
+
+    /**
+     * @param Post $post
+     * @param int $status
+     * @return int
+     * @throws \yii\db\Exception
+     */
+    public function changeStatusByPost(Post $post, int $status): int
+    {
+        return $this->dao
+            ->createCommand('UPDATE `comments` SET `status`=:status WHERE id=:id')
+            ->bindValue(':id', $post->getPrimaryKey(), PDO::PARAM_INT)
+            ->bindValue(':status', $status, PDO::PARAM_INT)
+            ->execute();
+    }
+
+    /**
+     * @param Post $post
+     * @return int
+     * @throws \yii\db\Exception
+     */
+    public function deleteAllByPost(Post $post): int
+    {
+        return $this->dao
+            ->createCommand('DELETE FROM `comments` WHERE post_id=:post_id')
+            ->bindValue(':post_id', $post->getPrimaryKey(), PDO::PARAM_INT)
+            ->execute();
+
     }
 
     /**

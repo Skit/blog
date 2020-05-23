@@ -6,19 +6,23 @@ namespace blog\managers;
 
 use backend\models\PostForm;
 use blog\entities\category\Category;
+use blog\entities\common\exceptions\BlogRecordsException;
 use blog\entities\common\exceptions\MetaDataExceptions;
+use blog\entities\post\Comment;
 use blog\entities\post\exceptions\PostBlogException;
 use blog\entities\post\Post;
 use blog\entities\relation\exceptions\RelationException;
 use blog\entities\tag\exceptions\TagException;
 use blog\entities\user\User;
 use blog\repositories\category\CategoriesRepository;
+use blog\repositories\comment\CommentRepository;
 use blog\repositories\exceptions\RepositoryException;
 use blog\repositories\post\PostRepository;
 use blog\repositories\tag\TagRepository;
 use blog\repositories\users\UsersRepository;
 use blog\services\PostService;
 use common\components\MTransaction;
+use yii\db\Exception;
 
 /**
  * Class PostManager
@@ -33,6 +37,7 @@ class PostManager
     private $tagRepository;
     private $userRepository;
     private $assignManager;
+    private $commentRepository;
     private $categoryRepository;
 
     /**
@@ -42,12 +47,13 @@ class PostManager
      * @param UsersRepository $userRepository
      * @param TagRepository $tagRepository
      * @param AssignManager $assignManager
+     * @param CommentRepository $commentRepository
      * @param TagManager $tagManager
      * @param MTransaction $transaction
      * @param PostService $service
      */
     public function __construct($repository, $categoryRepository, $userRepository, $tagRepository,
-                                $assignManager, $tagManager, $transaction, $service)
+                                $assignManager, $tagManager, $commentRepository, $transaction, $service)
     {
         $this->service = $service;
         $this->repository = $repository;
@@ -56,6 +62,7 @@ class PostManager
         $this->tagRepository = $tagRepository;
         $this->userRepository = $userRepository;
         $this->assignManager = $assignManager;
+        $this->commentRepository = $commentRepository;
         $this->categoryRepository = $categoryRepository;
     }
 
@@ -140,10 +147,33 @@ class PostManager
 
     /**
      * @param Post $post
-     * @return int
+     * @return bool
+     * @throws BlogRecordsException
      */
-    public function delete(Post $post): int
+    public function statusDelete(Post $post): bool
     {
-       return $this->repository->deleteById($post->getPrimaryKey());
+        $post->delete();
+
+        return $this->transaction->run(function () use ($post) {
+            $result = $this->repository->changeStatus($post, Post::STATUS_DELETED);
+            $this->commentRepository->changeStatusByPost($post, Comment::STATUS_DELETED);
+
+            return $result;
+        });
+    }
+
+    /**
+     * @param Post $post
+     * @return bool
+     * @throws BlogRecordsException
+     */
+    public function delete(Post $post): bool
+    {
+        $post->delete();
+
+        return $this->transaction->run(function () use ($post) {
+            $this->commentRepository->deleteAllByPost($post);
+            return $this->repository->deleteById($post->getPrimaryKey());
+        });
     }
 }

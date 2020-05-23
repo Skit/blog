@@ -25,14 +25,17 @@ class MTransaction
 
     /**
      * @param Closure $closure
+     * @return bool
      * @throws Exception
      */
-    public function run(Closure $closure): void
+    public function run(Closure $closure): bool
     {
         try {
             $this->dao->beginTransaction();
-            $closure->__invoke();
+            $result = (bool) $closure->__invoke();
             $this->dao->transaction->commit();
+
+            return $result;
         } catch (Exception $e) {
             $this->dao->transaction->rollBack();
             throw $e;

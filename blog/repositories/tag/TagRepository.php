@@ -24,12 +24,12 @@ class TagRepository extends AbstractRepository
 
     /**
      * @param Tag $tag
-     * @return int Object id
+     * @return Tag Object id
      * @throws Exception
      */
-    public function create($tag): ContentObjectInterface
+    public function create(Tag $tag): Tag
     {
-        $result = $this->dao
+        $this->dao
             ->createCommand('INSERT INTO `tags` (title, slug, status) VALUES (:title, :slug, :status)')
             ->bindValue(':title', $tag->getTitle(), PDO::PARAM_STR_CHAR)
             ->bindValue(':slug', $tag->getSlug(), PDO::PARAM_STR_CHAR)
@@ -66,7 +66,7 @@ class TagRepository extends AbstractRepository
         $bundle = new TagBundle([], function () {});
 
         $this->dao
-            ->createCommand("SELECT * FROM `tags` WHERE `title` IN ({$fields})")
+            ->createCommand("SELECT * FROM `tags` WHERE `title` IN ({$fields}) ORDER BY id")
             ->fetchAllObject(function(...$args) use ($bundle) {
                 $bundle->append(Tag::createFull($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6]));
             });
@@ -96,6 +96,19 @@ class TagRepository extends AbstractRepository
             });
 
         return $bundle;
+    }
+
+    /**
+     * @param Tag $tag
+     * @return int
+     * @throws Exception
+     */
+    public function delete(Tag $tag): int
+    {
+        return $this->dao
+            ->createCommand("DELETE FROM `tags` WHERE id=:id")
+            ->bindValue(':id', $tag->getPrimaryKey(), PDO::PARAM_INT)
+            ->execute();
     }
 
     public function update(ContentObjectInterface $object): ContentObjectInterface

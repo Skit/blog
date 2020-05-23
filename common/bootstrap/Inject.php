@@ -3,6 +3,7 @@
 namespace common\bootstrap;
 
 use blog\components\highlighter\PostHighlighter;
+use blog\repositories\comment\CommentRepository;
 use blog\components\ImageResizer\{ImageResizer, driver\ImagickDriver};
 use blog\components\ImageResizer\settings\{ImagickSettings, Jpeg, Modulate, Resize, Sharp};
 use blog\managers\{AssignManager, CategoryManager, PostManager, TagManager};
@@ -72,6 +73,7 @@ class Inject implements BootstrapInterface
                 new TagRepository($connection),
                 new AssignManager(new PostTagRepository($connection), new AssignService()),
                 new TagManager(new TagRepository($connection), new TagService()),
+                new CommentRepository($connection),
                 new MTransaction($connection),
                 new PostService(new PostHighlighter()));
         });

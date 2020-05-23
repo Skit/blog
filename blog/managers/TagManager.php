@@ -37,11 +37,11 @@ class TagManager
 
     /**
      * @param TagForm $form
-     * @return int pk
-     * @throws TagException
+     * @return Tag pk
      * @throws Exception
+     * @throws TagException
      */
-    public function create(TagForm $form): int
+    public function create(TagForm $form): Tag
     {
         return $this->repository->create(
             Tag::create($form->title, $form->slug, $form->status)

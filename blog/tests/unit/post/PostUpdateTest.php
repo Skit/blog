@@ -107,7 +107,7 @@ class PostUpdateTest extends Unit
         expect($post->getMetaData()->getKeywords())->equals('');
         expect($post->getMetaData()->getDescription())->equals($form->meta_description);
         expect($post->isHighlight())->false();
-        expect($post->getStatus())->equals($form->status);
+        expect($post->getStatus())->equals(Post::STATUS_DELETED);
 
         expect($post->isActive())->false();
     }

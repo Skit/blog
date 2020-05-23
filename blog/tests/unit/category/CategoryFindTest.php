@@ -4,7 +4,6 @@ namespace blog\tests;
 
 use blog\entities\category\Category;
 use blog\repositories\category\CategoriesRepository;
-use blog\repositories\exceptions\RepositoryException;
 use Codeception\Test\Unit;
 use common\fixtures\ActiveCategoriesFixture;
 use common\fixtures\InactiveCategoriesFixture;
@@ -73,13 +72,5 @@ class CategoryFindTest extends Unit
 
         expect($category)->isInstanceOf(Category::class);
         expect($category->getMetaData()->getTitle())->equals($this->fc->meta_data['title']);
-    }
-
-    public function testInactiveAsActive()
-    {
-        $this->fc = $this->tester->grabFixture('inactive', 0);
-
-        $this->expectException(RepositoryException::class);
-        $this->repository->findOneById($this->fc->id, Category::STATUS_ACTIVE);
     }
 }

@@ -133,7 +133,6 @@ class PostRepository extends AbstractRepository
      * @return int
      * @throws PostBlogException
      * @throws MetaDataExceptions
-     * @throws Exception
      */
     public function update(Post $post): int
     {
@@ -175,6 +174,21 @@ class PostRepository extends AbstractRepository
 
         return $command->execute();
     }
+
+    /**
+     * @param Post $post
+     * @param int $status
+     * @return int
+     */
+    public function changeStatus(Post $post, int $status)
+    {
+        return $this->dao
+            ->createCommand('UPDATE `posts` SET `status`=:status WHERE id=:id')
+            ->bindValue(':id', $post->getPrimaryKey(), PDO::PARAM_INT)
+            ->bindValue(':status', $status, PDO::PARAM_INT)
+            ->execute();
+    }
+
 
     /**
      * @param int $postId

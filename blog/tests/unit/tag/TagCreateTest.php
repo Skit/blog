@@ -28,29 +28,31 @@ class TagCreateTest extends Unit
     public function _setUp()
     {
         $this->faker = Faker\Factory::create();
-        $this->repository = new TagRepository(Yii::$app->db);
-        $this->manager = new TagManager($this->repository, new TagService());
+        $this->repository = Yii::$container->get(TagRepository::class);
+        $this->manager = Yii::$container->get(TagManager::class);
 
         return parent::_setUp();
     }
 
     public function testCreate()
     {
-        $this->specify('One from form', function() {
+        $this->specify('One from', function() {
             $form = new TagForm();
             $form->title = $this->faker->title;
             $form->slug = $this->faker->slug;
             $form->status = Tag::STATUS_ACTIVE;
 
-            $tagPk = $this->manager->create($form);
-            $tag = $this->repository->findOneById($tagPk, Tag::STATUS_ACTIVE);
+            $tag = $this->manager->create($form);
+            $tag = $this->repository->findOneById($tag->getPrimaryKey(), Tag::STATUS_ACTIVE);
 
             verify($tag->getTitle())->equals($form->title);
             verify($tag->getSlug())->equals($form->slug);
             verify($tag->getFrequency())->equals(0);
+
+            $this->repository->delete($tag);
         });
 
-        $this->specify('One from string form', function() {
+        $this->specify('One from string', function() {
             $bundle = new ArrayTagBundle('первый, второй, третий', Tag::STATUS_ACTIVE);
 
             $addedBundle = $this->manager->createByString($bundle->getFieldsString('title'));

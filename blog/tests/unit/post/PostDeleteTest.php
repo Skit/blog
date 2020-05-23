@@ -4,7 +4,9 @@
 namespace blog\tests\unit\post;
 
 
+use blog\managers\PostManager;
 use blog\repositories\post\PostRepository;
+use Codeception\Specify;
 use Codeception\Test\Unit;
 use common\fixtures\ActiveCategoriesFixture;
 use common\fixtures\PostFixture;
@@ -14,18 +16,24 @@ use Yii;
 
 /**
  * Class PostDelete
+ * @property PostManager $manager
  * @property PostRepository $repo
+ *
  *
  * @package blog\tests\unit\post
  */
 class PostDeleteTest extends Unit
 {
+    use Specify;
+
     protected $tester;
     private $repo;
+    private $manager;
 
     protected function _before()
     {
         $this->repo = Yii::$container->get(PostRepository::class);
+        $this->manager = Yii::$container->get(PostManager::class);
 
         $this->tester->haveFixtures([
             'user' => [
@@ -49,11 +57,24 @@ class PostDeleteTest extends Unit
 
     public function testDelete()
     {
-        $post = $this->tester->grabFixture('post', 0);
-        $post = $this->repo->findAnyById($post->id);
-        $this->repo->deleteById($post->getPrimaryKey());
+        $this->specify('Set status deleted', function () {
+            $post = $this->tester->grabFixture('post', 0);
+            $post = $this->repo->findAnyById($post->id);
+            $this->manager->statusDelete($post);
 
-        expect($post)->notNull();
-        expect($this->repo->findAnyById($post->getPrimaryKey()))->null();
+            expect($post)->notNull();
+            expect($post->isDelete())->true();
+            expect($this->repo->findAnyById($post->getPrimaryKey()))->notNull();
+        });
+
+        $this->specify('Delete from database', function () {
+            $post = $this->tester->grabFixture('post', 0);
+            $post = $this->repo->findAnyById($post->id);
+            $this->manager->delete($post);
+
+            expect($post->isDelete())->true();
+            expect($this->repo->findAnyById($post->getPrimaryKey()))->null();
+        });
+
     }
 }
