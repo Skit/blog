@@ -17,7 +17,7 @@ namespace blog\components\PathReplacer;
 class NS {
 
     private $name;
-    private $variables;
+    private $variables = [];
 
     /**
      * NS constructor.

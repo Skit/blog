@@ -49,7 +49,7 @@ class PathReplacer
      */
     public function replace(string $path, bool $throwIfSkipped = true): self
     {
-        if ($path) {
+        if ($path && strpos($path, '{') !== false) {
             $this->setPathNamespace($path);
             $path = str_replace("{$this->currentNS->getName()}:", '', $path);
 
@@ -66,10 +66,11 @@ class PathReplacer
                     $path = str_replace($m[0], '', $path);
                 }
             }
+
+            $this->sentUnpackNS();
         }
 
         $this->path = $path;
-        $this->sentUnpackNS();
 
         return $this;
     }
@@ -82,7 +83,7 @@ class PathReplacer
         if (is_dir($this->path) || file_exists($this->path)) {
             $pathInfo = pathinfo($this->path);
 
-            if (preg_match('~_(?<c>\d+)~', $pathInfo['filename'], $m)) {
+            if (preg_match('~_(?<c>\d+)\.\w+~', $pathInfo['filename'], $m)) {
                 $incremented = preg_replace('~_\d+$~', '_' . ((int) $m['c'] + 1), $pathInfo['filename']);
             } else {
                 $incremented = "{$pathInfo['filename']}_1";
@@ -153,11 +154,18 @@ class PathReplacer
      */
     public function setVars(array $vars): self
     {
-        if ($this->localNS) {
-            $vars = array_merge($vars, $this->localNS->getVariables());
-        }
-
         $this->localNS = new NS('local', $vars);
+
+        return $this;
+    }
+
+    /**
+     * @param array $vars
+     * @return $this
+     */
+    public function appendVars(array $vars): self
+    {
+       $this->setVars(array_merge($vars, $this->localNS->getVariables()));
 
         return $this;
     }

@@ -63,6 +63,17 @@ class PathReplacerTest extends Unit
 
             verify($replacer->replace($path)->getUrl())->equals('http://back.domain/uploads/posts/123/images/new.jpg');
         });
+
+        $this->specify('Convert path to url', function() use ($replacer) {
+            $pattern = 'back:{uploads}/posts/{id}/images/{filename}.{ext}';
+            $replacer->setVars(['id' => '123', 'filename' => 'new', 'ext' => 'jpg']);
+
+            $path = $replacer->replace($pattern)->getPath();
+            $pathUrl = $replacer->replace($path)->getUrl();
+
+            verify($path)->equals('/var/www/backend/web/uploads/posts/123/images/new.jpg');
+            verify($pathUrl)->equals('http://back.domain/uploads/posts/123/images/new.jpg');
+        });
     }
 
     public function testSetWrongVariable()
