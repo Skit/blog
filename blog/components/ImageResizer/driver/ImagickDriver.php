@@ -174,13 +174,14 @@ final class ImagickDriver implements ImageResizerDriverInterface
     }
 
     /**
+     * @param bool $skip
      * @return ImageResizerDriverInterface
      */
-    public function compress(): ImageResizerDriverInterface
+    public function compress(bool $skip = false): ImageResizerDriverInterface
     {
-        if ($this->settings->getFormat()->getExtension() == 'png') {
+        if ($this->getTargetExtension() == 'png') {
             $this->pngCompress();
-        } elseif ($this->settings->getFormat()->getExtension() == 'jpg') {
+        } elseif ($this->getTargetExtension() == 'jpg') {
             $this->jpegCompress();
         }
 
@@ -210,9 +211,7 @@ final class ImagickDriver implements ImageResizerDriverInterface
      */
     public function save(Path $path, bool $makePath = true): Result
     {
-        $e = $this->settings->getFormat()->getExtension();
-
-        if (!$this->imagick->writeImage("{$e}:{$path->create($makePath)->get()}")) {
+        if (!$this->imagick->writeImage("{$this->getTargetExtension()}:{$path->create($makePath)->get()}")) {
             throw new ImageResizerException('Fail to save');
         }
 
@@ -262,11 +261,12 @@ final class ImagickDriver implements ImageResizerDriverInterface
         return $this->imagick->getImageHeight();
     }
 
-    public function __destruct()
+    /**
+     * @return string
+     */
+    public function getTargetExtension(): string
     {
-        if ($this->imagick) {
-            $this->imagick->destroy();
-        }
+        return $this->settings->getFormat()->getExtension();
     }
 
     private function pngCompress(): void
@@ -284,5 +284,12 @@ final class ImagickDriver implements ImageResizerDriverInterface
         $this->imagick->setCompression(Imagick::COMPRESSION_JPEG);
         $this->imagick->setImageCompressionQuality($this->settings->getFormat()->getQuality());
         $this->imagick->setFormat('png');
+    }
+
+    public function __destruct()
+    {
+        if ($this->imagick) {
+            $this->imagick->destroy();
+        }
     }
 }

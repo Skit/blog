@@ -17,6 +17,8 @@ interface ImageResizerDriverInterface
 
     public function getCurrentHeight(): int;
 
+    public function getTargetExtension(): string;
+
     public function isCurrentSquare(): bool;
 
     public function isCurrentPortrait(): bool;
@@ -25,7 +27,7 @@ interface ImageResizerDriverInterface
 
     public function strip(): ImageResizerDriverInterface;
 
-    public function compress(): ImageResizerDriverInterface;
+    public function compress(bool $skip = false): ImageResizerDriverInterface;
 
     public function sharp(): ImageResizerDriverInterface;
 
