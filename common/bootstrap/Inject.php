@@ -3,6 +3,8 @@
 namespace common\bootstrap;
 
 use blog\components\highlighter\PostHighlighter;
+use blog\components\PathReplacer\NS;
+use blog\components\PathReplacer\PathReplacer;
 use blog\repositories\comment\CommentRepository;
 use blog\components\ImageResizer\{ImageResizer, driver\ImagickDriver};
 use blog\components\ImageResizer\settings\{ImagickSettings, Jpeg, Modulate, Resize, Sharp};
@@ -44,7 +46,7 @@ class Inject implements BootstrapInterface
             $connection->password = 'secret';
             $connection->attributes = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
             $connection->commandMap['mysql'] = MCommand::class;
-            $connection->dsn = 'mysql:host=blog_mysql_1;dbname=blog_test';
+            $connection->dsn = 'mysql:host=blog_mysql_1;dbname=blog' . (YII_ENV == 'test' ? '_test' : '');
 
             return $connection;
         });
@@ -92,6 +94,27 @@ class Inject implements BootstrapInterface
                         new Modulate(80, 60, 100)
                     )
                 )
+            );
+        });
+
+        /**
+         * PathReplacer
+         */
+        $container->set(PathReplacer::class, function (): PathReplacer
+        {
+            return new PathReplacer('/var/www',
+                new NS('front', [
+                    'domain' => 'http://blog.loc',
+                    'nsRoot' => '{rootDir}/frontend',
+                    'public' => '{nsRoot}/web',
+                    'uploads' => '{public}/uploads',
+                    'postImage' => '{uploads}/posts/{year}/{postId}/images/{type}'
+                ]),
+                new NS('back', [
+                    'nsRoot' => '{rootDir}/backend',
+                    'domain' => 'http://backend.blog.loc',
+                    'uploads' => '{nsRoot}/web/uploads'
+                ])
             );
         });
     }
