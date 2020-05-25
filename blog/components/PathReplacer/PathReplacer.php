@@ -153,6 +153,10 @@ class PathReplacer
      */
     public function setVars(array $vars): self
     {
+        if ($this->localNS) {
+            $vars = array_merge($vars, $this->localNS->getVariables());
+        }
+
         $this->localNS = new NS('local', $vars);
 
         return $this;

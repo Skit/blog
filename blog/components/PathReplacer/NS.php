@@ -31,6 +31,14 @@ class NS {
     }
 
     /**
+     * @return array
+     */
+    public function getVariables(): array
+    {
+        return $this->variables;
+    }
+
+    /**
      * @return string
      */
     public function getName(): string
