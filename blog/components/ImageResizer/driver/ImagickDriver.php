@@ -137,13 +137,6 @@ final class ImagickDriver implements ImageResizerDriverInterface
      */
     public function postProcessing(): ImageResizerDriverInterface
     {
-        $this->imagick->unsharpMaskImage(
-            $this->settings->getSharp()->getRadius(),
-            $this->settings->getSharp()->getSigma(),
-            $this->settings->getSharp()->getAmount(),
-            $this->settings->getSharp()->getThreshold()
-        );
-
         $this->imagick->posterizeImage(136, false);
         $this->imagick->transformImageColorspace(Imagick::COLORSPACE_SRGB);
         $this->imagick->setInterlaceScheme(Imagick::INTERLACE_NO);
@@ -168,13 +161,14 @@ final class ImagickDriver implements ImageResizerDriverInterface
     /**
      * @return ImageResizerDriverInterface
      */
-    public function png(): ImageResizerDriverInterface
+    public function sharp(): ImageResizerDriverInterface
     {
-        $this->imagick->setOption('png:compression-filter', '5');
-        $this->imagick->setOption('png:compression-strategy', '1');
-        $this->imagick->setOption('png:exclude-chunk', 'all');
-        $this->imagick->setOption('png:compression-level', $this->settings->getFormat()->getQuality());
-        $this->imagick->setFormat($this->settings->getFormat()->getExtension());
+        $this->imagick->unsharpMaskImage(
+            $this->settings->getSharp()->getRadius(),
+            $this->settings->getSharp()->getSigma(),
+            $this->settings->getSharp()->getAmount(),
+            $this->settings->getSharp()->getThreshold()
+        );
 
         return $this;
     }
@@ -182,12 +176,13 @@ final class ImagickDriver implements ImageResizerDriverInterface
     /**
      * @return ImageResizerDriverInterface
      */
-    public function jpeg(): ImageResizerDriverInterface
+    public function compress(): ImageResizerDriverInterface
     {
-        $this->imagick->setOption('jpeg:fancy-upsampling', 'off');
-        $this->imagick->setCompression(Imagick::COMPRESSION_JPEG);
-        $this->imagick->setImageCompressionQuality($this->settings->getFormat()->getQuality());
-        $this->imagick->setFormat($this->settings->getFormat()->getExtension());
+        if ($this->settings->getFormat()->getExtension() == 'png') {
+            $this->pngCompress();
+        } elseif ($this->settings->getFormat()->getExtension() == 'jpg') {
+            $this->jpegCompress();
+        }
 
         return $this;
     }
@@ -215,7 +210,9 @@ final class ImagickDriver implements ImageResizerDriverInterface
      */
     public function save(Path $path, bool $makePath = true): Result
     {
-        if (!$this->imagick->writeImage($path->create($makePath)->get())) {
+        $e = $this->settings->getFormat()->getExtension();
+
+        if (!$this->imagick->writeImage("{$e}:{$path->create($makePath)->get()}")) {
             throw new ImageResizerException('Fail to save');
         }
 
@@ -267,6 +264,25 @@ final class ImagickDriver implements ImageResizerDriverInterface
 
     public function __destruct()
     {
-        $this->imagick->destroy();
+        if ($this->imagick) {
+            $this->imagick->destroy();
+        }
+    }
+
+    private function pngCompress(): void
+    {
+        $this->imagick->setOption('png:compression-filter', '5');
+        $this->imagick->setOption('png:compression-strategy', '1');
+        $this->imagick->setOption('png:exclude-chunk', 'all');
+        $this->imagick->setOption('png:compression-level', $this->settings->getFormat()->getQuality());
+        $this->imagick->setFormat('jpeg');
+    }
+
+    private function jpegCompress(): void
+    {
+        $this->imagick->setOption('jpeg:fancy-upsampling', 'off');
+        $this->imagick->setCompression(Imagick::COMPRESSION_JPEG);
+        $this->imagick->setImageCompressionQuality($this->settings->getFormat()->getQuality());
+        $this->imagick->setFormat('png');
     }
 }

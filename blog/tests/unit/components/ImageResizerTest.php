@@ -107,6 +107,7 @@ class ImageResizerTest extends Unit
                 ->crop(new Size(300, 100))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->postProcessing()
                 ->save(new Path(codecept_output_dir('images/landscape/face_crop_full.jpg')));
 
@@ -126,6 +127,7 @@ class ImageResizerTest extends Unit
                 ->resize(new Size(200, 100))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->save(new Path(codecept_output_dir('images/landscape/waterfall_resize_full.jpg')));
 
             verify($result->width)->equals(160);
@@ -151,6 +153,7 @@ class ImageResizerTest extends Unit
                 ->marginalResize(new Size(200, 100))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->save(new Path(codecept_output_dir('images/landscape/waterfall_marginal_resize_full.jpg')));
 
             verify($result->width)->equals(200);
@@ -164,6 +167,7 @@ class ImageResizerTest extends Unit
                 ->marginalResize(new Size(200, 300))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->postProcessing()
                 ->save(new Path(codecept_output_dir('images/landscape/waterfall_marginal_proc_resize_full.jpg')));
 
@@ -178,6 +182,7 @@ class ImageResizerTest extends Unit
                 ->adaptiveResize(new Size(200, 100))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->save(new Path(codecept_output_dir('images/landscape/waterfall_adaptive_resize_full.jpg')));
 
             verify($result->width)->equals(160);
@@ -191,6 +196,7 @@ class ImageResizerTest extends Unit
                 ->marginalResize(new Size(1024, 768))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->postProcessing()
                 ->save(new Path(codecept_output_dir('images/landscape/waterfall_marginal_proc_resize_full_big.jpg')));
 
@@ -234,6 +240,7 @@ class ImageResizerTest extends Unit
                ->crop(new Size(200, 100))
                ->strip()
                ->modulate()
+               ->sharp()
                ->save(new Path(codecept_output_dir('images/portrait/student_crop.jpg')));
 
            verify($result->width)->equals(200);
@@ -288,6 +295,7 @@ class ImageResizerTest extends Unit
                 ->marginalResize(new Size(200, 100))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->postProcessing()
                 ->save(new Path(codecept_output_dir('images/portrait/student_marginal_full.jpg')));
 
@@ -302,6 +310,7 @@ class ImageResizerTest extends Unit
                 ->marginalResize(new Size(300, 500))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->postProcessing()
                 ->save(new Path(codecept_output_dir('images/portrait/woman_marginal_full.jpg')));
 
@@ -316,6 +325,7 @@ class ImageResizerTest extends Unit
                 ->marginalResize(new Size(300, 500))
                 ->strip()
                 ->modulate()
+                ->sharp()
                 ->postProcessing()
                 ->save(new Path(codecept_output_dir('images/portrait/car_marginal_full.jpg')));
 
@@ -346,8 +356,9 @@ class ImageResizerTest extends Unit
                ->crop(new Size(150, 100))
                ->strip()
                ->modulate()
+               ->sharp()
                ->postProcessing()
-               ->jpeg()
+               ->compress()
                ->save(new Path(codecept_output_dir('images/square/squares_crop_full.jpg')));
 
            verify($result->width)->equals(150);
@@ -361,8 +372,9 @@ class ImageResizerTest extends Unit
                ->crop(new Size(180, 150))
                ->strip()
                ->modulate()
+               ->sharp()
                ->postProcessing()
-               ->jpeg()
+               ->compress()
                ->save(new Path(codecept_output_dir('images/square/squares_face_crop_full.jpg')));
 
            verify($result->width)->equals(180);
@@ -376,8 +388,9 @@ class ImageResizerTest extends Unit
                ->crop(new Size(200, 200))
                ->strip()
                ->modulate()
+               ->sharp()
                ->postProcessing()
-               ->jpeg()
+               ->compress()
                ->save(new Path(codecept_output_dir('images/square/squares_color_crop_full.jpg')));
 
            verify($result->width)->equals(200);
@@ -396,8 +409,9 @@ class ImageResizerTest extends Unit
                ->resize(new Size(200, 200))
                ->strip()
                ->modulate()
+               ->sharp()
                ->postProcessing()
-               ->jpeg()
+               ->compress()
                ->save(new Path(codecept_output_dir('images/square/square_color_resize_full.jpg')));
 
            verify($result->width)->equals(200);
@@ -411,8 +425,9 @@ class ImageResizerTest extends Unit
                ->adaptiveResize(new Size(200, 200))
                ->strip()
                ->modulate()
+               ->sharp()
                ->postProcessing()
-               ->jpeg()
+               ->compress()
                ->save(new Path(codecept_output_dir('images/square/square_color_adaptive_full.jpg')));
 
            verify($result->width)->equals(200);
@@ -426,8 +441,9 @@ class ImageResizerTest extends Unit
                ->marginalResize(new Size(200, 150))
                ->strip()
                ->modulate()
+               ->sharp()
                ->postProcessing()
-               ->jpeg()
+               ->compress()
                ->save(new Path(codecept_output_dir('images/square/square_color_marginal_full.jpg')));
 
            verify($result->width)->equals(150);
@@ -440,8 +456,9 @@ class ImageResizerTest extends Unit
            $result = $this->resizer->driver()
                ->marginalResize(new Size(150, 150))
                ->strip()
-               ->jpeg()
+               ->compress()
                ->modulate()
+               ->sharp()
                ->postProcessing()
                ->save(new Path(codecept_output_dir('images/square/square_face_marginal_full.jpg')));
 
@@ -477,7 +494,7 @@ class ImageResizerTest extends Unit
 
             $result = $this->resizer->driver()
                 ->marginalResize(new Size($width, $height))
-                ->jpeg()
+                ->compress()
                 ->strip()
                 ->save((new Path(codecept_output_dir('images/marginal.jpg')))->create());
 
@@ -493,7 +510,7 @@ class ImageResizerTest extends Unit
 
             $result = $this->resizer->driver()
                 ->resize(new Size($width, $height))
-                ->jpeg()
+                ->compress()
                 ->strip()
                 ->save((new Path(codecept_output_dir('images/square.jpg')))->create());
 
@@ -520,6 +537,24 @@ class ImageResizerTest extends Unit
                 ->save((new Path(codecept_output_dir('images/postprocessing.jpg')))->create());
 
             verify($result->fileSize->megaBytes)->lessThan(1);
+        });
+    }
+
+    // TODO сделать тест конвертации jpg в png
+    public function testConvert()
+    {
+        $this->specify('Convert to jpg', function () {
+            $this->resizer->create(new Path(codecept_data_dir('images/mountain1651x924.png')));
+
+            $result = $this->resizer->driver()
+                ->resize(new Size(800, 600))
+                ->compress()
+                ->modulate()
+                ->sharp()
+                ->postProcessing()
+                ->save((new Path(codecept_output_dir('images/pngTo.jpg')))->create());
+
+            verify($result->fileSize->kilobytes)->greaterThan(80);
         });
     }
 }

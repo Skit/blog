@@ -25,9 +25,9 @@ interface ImageResizerDriverInterface
 
     public function strip(): ImageResizerDriverInterface;
 
-    public function png(): ImageResizerDriverInterface;
+    public function compress(): ImageResizerDriverInterface;
 
-    public function jpeg(): ImageResizerDriverInterface;
+    public function sharp(): ImageResizerDriverInterface;
 
     public function modulate(): ImageResizerDriverInterface;
 

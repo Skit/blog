@@ -32,6 +32,6 @@ class Jpeg implements FormatInterface
 
     public function getExtension(): string
     {
-        return 'jpeg';
+        return 'jpg';
     }
 }
