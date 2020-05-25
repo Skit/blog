@@ -39,7 +39,10 @@
         "symfony/browser-kit": ">=2.7 <=4.2.4",
         "symfony/var-dumper": "^5.1@dev",
         "codeception/aspect-mock": "*",
-        "codeception/specify": "dev-master"
+        "codeception/specify": "dev-master",
+        "guzzlehttp/guzzle": "^6.5",
+        "flow/jsonpath": "^0.5",
+        "codeception/module-rest": "dev-master"
     },
     "config": {
         "process-timeout": 1800,
