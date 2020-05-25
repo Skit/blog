@@ -6,6 +6,12 @@ namespace blog\components\PathReplacer;
 
 /**
  * Class NS
+ *
+ * Required variables
+ * @property string $domain
+ * @property string $public
+ * @property string $rootDir
+ *
  * @package blog\tests\unit\components
  */
 class NS {
