@@ -13,7 +13,7 @@ use yii\web\UploadedFile;
  * @property string $type
  * @property string $path
  * @property string $fileName
- * @property string $postId
+ * @property string $postUuid
  * @property integer $with
  * @property integer $height
  * @property bool $compress
@@ -26,7 +26,7 @@ class PostImageForm extends Model
     public const TYPE_RESIZED = 'resized';
     public const TYPE_ORIGINAL = 'original';
 
-    public $postId;
+    public $postUuid;
     public $path;
     public $fileName;
     public $image;
@@ -39,11 +39,12 @@ class PostImageForm extends Model
     public function rules()
     {
         return [
-            [['postId', 'image', 'with', 'height'], 'required'],
+            [['postUuid', 'image', 'with', 'height'], 'required'],
             [['path'], 'string', 'max' => 255],
-            [['postId', 'fileName'], 'string', 'max' => 36],
+            [['postUuid', 'fileName'], 'string', 'max' => 36],
             [['with', 'height'], 'integer'],
             [['compress'], 'boolean', 'trueValue' => true, 'falseValue' => false],
+            // TODO использовать проверку из компонента, которая достоверно проверяет формат, а не расширение
             ['image', 'file', 'extensions' => ['png', 'jpg'], 'maxSize' => 1024*1024*3],
         ];
     }

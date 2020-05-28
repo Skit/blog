@@ -22,7 +22,7 @@ class PostBanners implements JsonSerializable
      * @param string $videoUrl
      * @return static
      */
-    public static function create(?string $imageUrl, ?string $videoUrl): self
+    public static function create(?string $imageUrl, ?string $videoUrl = null): self
     {
         $media = new self;
         $media->imageUrl = $imageUrl;

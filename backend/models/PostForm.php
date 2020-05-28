@@ -6,6 +6,7 @@ use yii\base\Model;
 
 /**
  * @property int $id
+ * @property string $uuid
  * @property string $title
  * @property string $slug
  * @property string $tags
@@ -28,6 +29,7 @@ use yii\base\Model;
 class PostForm extends Model
 {
     public $id;
+    public $uuid;
     public $title;
     public $slug;
     public $preview;
@@ -53,7 +55,7 @@ class PostForm extends Model
     public function rules()
     {
         return [
-            [['title', 'slug', 'category_id'], 'required'],
+            [['title', 'slug', 'uuid', 'category_id'], 'required'],
             [['content', 'tags', 'published_at'], 'string'],
             [['category_id', 'status'], 'integer'],
             [['title', 'slug', 'meta_title', 'meta_description', 'meta_keywords', 'video_url', 'image_url'], 'string', 'max' => 255],

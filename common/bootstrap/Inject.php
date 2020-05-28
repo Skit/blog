@@ -102,18 +102,20 @@ class Inject implements BootstrapInterface
          */
         $container->set(PathReplacer::class, function (): PathReplacer
         {
+            $uploads = YII_ENV == 'test' ? 'test_uploads' : 'uploads';
+
             return new PathReplacer('/var/www',
                 new NS('front', [
                     'domain' => 'http://blog.loc',
                     'nsRoot' => '{rootDir}/frontend',
                     'public' => '{nsRoot}/web',
-                    'uploads' => '{public}/uploads',
-                    'postImage' => '{uploads}/posts/{year}/{postId}/images/{type}'
+                    'uploads' => "{public}/{$uploads}",
+                    'postImage' => '{uploads}/posts/{year}/{postUuid}/images/{type}'
                 ]),
                 new NS('back', [
                     'nsRoot' => '{rootDir}/backend',
                     'domain' => 'http://backend.blog.loc',
-                    'uploads' => '{nsRoot}/web/uploads'
+                    'uploads' => "{nsRoot}/web/{$uploads}"
                 ])
             );
         });

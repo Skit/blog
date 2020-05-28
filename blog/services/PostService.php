@@ -72,7 +72,6 @@ final class PostService
     public function makeEdit(PostForm $form, Post $post, Category $category): Post
     {
         $mediaData = PostBanners::create($form->image_url, $form->video_url);
-        // TODO Выдать через статический метод
         $metaData = new MetaData($form->meta_title, $form->meta_description, $form->meta_keywords);
 
         $post->edit(

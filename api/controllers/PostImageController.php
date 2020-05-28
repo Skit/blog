@@ -7,11 +7,18 @@ use api\managers\PostImageManager;
 use api\models\PostImageForm;
 use blog\components\ImageResizer\exceptions\ImageResizerException;
 use blog\components\PathReplacer\PathReplacerExceptions;
-use blog\repositories\post\PostRepository;
+use blog\entities\post\exceptions\PostBlogException;
+use blog\entities\relation\exceptions\RelationException;
+use blog\entities\tag\exceptions\TagException;
+use blog\managers\PostManager;
+use blog\repositories\exceptions\RepositoryException;
+use Codeception\Util\HttpCode;
 use yii\base\InvalidConfigException;
 use yii\filters\auth\HttpBearerAuth;
 use yii\rest\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Request;
+use yii\web\Response;
 
 /**
  * TODO вернуть сответствующие коды ответа
@@ -20,8 +27,9 @@ use yii\web\Request;
  */
 class PostImageController extends Controller
 {
-    private $postRepository;
+    private $postManager;
     private $imageManager;
+    private $response;
     private $request;
 
     public function behaviors()
@@ -36,16 +44,18 @@ class PostImageController extends Controller
      * PostImageController constructor.
      * @param $id
      * @param $module
-     * @param PostRepository $postRepository
+     * @param PostManager $postManager
      * @param PostImageManager $imageManager
      * @param Request $request
+     * @param Response $response
      * @param array $config
      */
-    public function __construct($id, $module, PostRepository $postRepository, PostImageManager $imageManager, Request $request, $config = [])
+    public function __construct($id, $module, PostManager $postManager, PostImageManager $imageManager, Request $request, Response $response, $config = [])
     {
+        $this->response = $response;
         $this->request = $request;
         $this->imageManager = $imageManager;
-        $this->postRepository = $postRepository;
+        $this->postManager = $postManager;
         parent::__construct($id, $module, $config);
     }
 
@@ -58,7 +68,7 @@ class PostImageController extends Controller
         $model = new PostImageForm();
         $model->loadParams($this->request->getQueryParams());
 
-        if ($model->validate('postId')) {
+        if ($model->validate('postUuid')) {
             $typeResized = PostImageForm::TYPE_RESIZED;
             $typeOriginal = PostImageForm::TYPE_ORIGINAL;
 
@@ -73,9 +83,14 @@ class PostImageController extends Controller
 
     /**
      * @return PostImageForm|array
-     * @throws PathReplacerExceptions
      * @throws ImageResizerException
      * @throws InvalidConfigException
+     * @throws NotFoundHttpException
+     * @throws PathReplacerExceptions
+     * @throws PostBlogException
+     * @throws RelationException
+     * @throws RepositoryException
+     * @throws TagException
      */
     public function actionResize()
     {
@@ -83,12 +98,17 @@ class PostImageController extends Controller
         $model->loadParams($this->request->getBodyParams());
 
         if ($model->validate()) {
-            $model->fileName = $model->fileName ?? uniqid();
-            $original = $this->imageManager->original($model);
-            $resized = $this->imageManager->marginalResize($model);
+            if ($post = $this->postManager->findOneActiveByUuid($model->postUuid)) {
+                $model->fileName = $model->fileName ?? uniqid();
+                $original = $this->imageManager->original($model);
+                $resized = $this->imageManager->marginalResize($model);
 
-            return [
-                'image' => [
+                // TODO бросить исключение
+                if ($this->postManager->setImage($post, $resized->getRelative())) {
+                    $this->response->setStatusCode(HttpCode::CREATED);
+                }
+
+                return [
                     'resized' => [
                         'url' => $resized->getUrl(),
                         'relative' => $resized->getRelative(),
@@ -97,11 +117,13 @@ class PostImageController extends Controller
                         'url' => $original->getUrl(),
                         'relative' => $original->getRelative(),
                     ],
-                ],
-                '_links' => [
-                    'delete' => "http://backend.blog.loc/api/post-images?{$model->postId}&path={$resized->getRelative()}"
-                ]
-            ];
+                    '_links' => [
+                        'delete' => "http://backend.blog.loc/api/post-images?{$model->postUuid}&path={$resized->getRelative()}"
+                    ]
+                ];
+            } else {
+                throw new NotFoundHttpException('Post is not found');
+            }
         }
 
         return $model;
@@ -116,7 +138,7 @@ class PostImageController extends Controller
         $model = new PostImageForm();
         $model->loadParams($this->request->getQueryParams());
 
-        if ($model->validate(['postId', 'path'])) {
+        if ($model->validate(['postUuid', 'path'])) {
             if ($this->imageManager->delete($model)) {
                 $typeResized = PostImageForm::TYPE_RESIZED;
 

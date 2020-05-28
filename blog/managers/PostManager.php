@@ -11,6 +11,7 @@ use blog\entities\common\exceptions\MetaDataExceptions;
 use blog\entities\post\Comment;
 use blog\entities\post\exceptions\PostBlogException;
 use blog\entities\post\Post;
+use blog\entities\post\PostBanners;
 use blog\entities\relation\exceptions\RelationException;
 use blog\entities\tag\exceptions\TagException;
 use blog\entities\user\User;
@@ -22,7 +23,6 @@ use blog\repositories\tag\TagRepository;
 use blog\repositories\users\UsersRepository;
 use blog\services\PostService;
 use common\components\MTransaction;
-use yii\db\Exception;
 
 /**
  * Class PostManager
@@ -92,7 +92,6 @@ class PostManager
     }
 
     /**
-     * TODO в мэнэджере поиск только по объекту Post
      * @param PostForm $post
      * @return Post
      * @throws PostBlogException
@@ -106,6 +105,35 @@ class PostManager
         $post->setTags($this->tagRepository->findAllById($post->getPrimaryKey()));
 
         return $post;
+    }
+
+    /**
+     * @param string $uuid
+     * @return Post
+     * @throws PostBlogException
+     * @throws RelationException
+     * @throws RepositoryException
+     * @throws TagException
+     */
+    public function findOneActiveByUuid(string $uuid): ?Post
+    {
+        if (!$post = $this->repository->findOneByUuid($uuid, Post::STATUS_ACTIVE)) {
+            return null;
+        }
+
+        $post->setTags($this->tagRepository->findAllById($post->getPrimaryKey()));
+
+        return $post;
+    }
+
+    /**
+     * @param Post $post
+     * @param string $imageUrl
+     * @return int
+     */
+    public function setImage(Post $post, string $imageUrl): int
+    {
+        return $this->repository->updateAttribute($post, ['post_banners' => PostBanners::create($imageUrl)]);
     }
 
     /**

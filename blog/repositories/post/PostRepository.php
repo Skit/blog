@@ -6,10 +6,8 @@ namespace blog\repositories\post;
 
 use blog\entities\category\Category;
 use blog\entities\common\exceptions\MetaDataExceptions;
-use blog\entities\common\interfaces\BlogRecordsInterface;
 use blog\entities\common\interfaces\ContentObjectInterface;
 use blog\entities\post\exceptions\PostBlogException;
-use blog\entities\post\interfaces\PostInterface;
 use blog\entities\post\Post;
 use blog\entities\relation\exceptions\RelationException;
 use blog\entities\relation\RelationSql;
@@ -18,9 +16,9 @@ use blog\entities\user\User;
 use blog\repositories\abstracts\AbstractRepository;
 use blog\repositories\exceptions\RepositoryException;
 use PDO;
-use yii\db\Exception;
 
 /**
+ * TODO кинуть экзепшны если не найдена или не обновлена запись
  * Class PostRepository
  * @package blog\repositories\post
  */
@@ -103,6 +101,36 @@ class PostRepository extends AbstractRepository
     }
 
     /**
+     * TODO оставить поиск только по uuid
+     * TODO здесь не нужно джойнить всё подряд, сделать включение связей по необходимости
+     * @param string $uuid
+     * @param int $status
+     * @return Post|null
+     * @throws RelationException
+     * @throws RepositoryException
+     */
+    public function findOneByUuid(string $uuid, int $status): ?ContentObjectInterface
+    {
+        $sql = "SELECT p.*, cat.id, cat.title, cat.content, cat.created_at, up.bio, up.avatar_url, u.id, u.username FROM `posts` p 
+                INNER JOIN `categories` cat ON p.`category_id` = cat.`id`
+                INNER JOIN `users` u ON u.`id`=p.`creator_id`
+                LEFT JOIN `user_profiles` up on u.`id`=up.`user_id`
+                WHERE p.`uuid`=:uuid AND p.`status`=:status LIMIT 1";
+
+        $prepare = new RelationSql($sql);
+        $prepare->withClass('u', User::class)->thatHas('up', Profile::class)
+            ->withClass('cat', Category::class);
+
+        /* @var Post $post */
+        $post =  $this->dao->createCommandWithRelation($prepare)
+            ->bindValue(':uuid', $uuid, PDO::PARAM_STR)
+            ->bindValue(':status', $status, PDO::PARAM_INT)
+            ->fetchOneObject($this->getClassName());
+
+        return $post ?: null;
+    }
+
+    /**
      * @param int $id
      * @return Post|null
      * @throws RelationException
@@ -126,6 +154,31 @@ class PostRepository extends AbstractRepository
             ->fetchOneObject($this->getClassName());
 
         return $post ?: null;
+    }
+
+    /**
+     * TODO сделать тесты и вынести метод в базловый класс
+     * @param Post $post
+     * @param array $attributes
+     * @return int
+     */
+    public function updateAttribute(Post $post, array $attributes)
+    {
+        $sql = 'UPDATE `posts` SET';
+        foreach ($attributes as $key => $value) {
+            $chromakey = ":{$key}";
+            $sql .= " {$key}=$chromakey,";
+            $attributes += [$chromakey => $value];
+            unset($attributes[$key]);
+        }
+
+        $command = $this->dao
+            ->createCommand(rtrim($sql, ',') . ' WHERE id=:id')
+            ->bindValues(array_merge($attributes, [
+                ':id' => $post->getPrimaryKey()
+            ]));
+
+        return $command->execute();
     }
 
     /**

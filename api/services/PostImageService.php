@@ -36,7 +36,7 @@ class PostImageService
     {
         return clone $this->pathReplacer->setVars([
             'type' => $form->type,
-            'postId' => $form->postId,
+            'postUuid' => $form->postUuid,
             'fileName' => $form->fileName,
             'width' => $driver->getCurrentWidth(),
             'height' => $driver->getCurrentHeight(),
@@ -52,7 +52,7 @@ class PostImageService
     public function frontDirPath(PostImageForm $form): string
     {
         return $this->pathReplacer
-            ->setVars(['postId' => $form->postId, 'type' => $form->type])
+            ->setVars(['postUuid' => $form->postUuid, 'type' => $form->type])
             ->replace('front:{postImage}')->getPath();
     }
 
