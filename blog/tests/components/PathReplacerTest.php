@@ -1,7 +1,7 @@
 <?php
 
 
-namespace blog\tests\unit\components;
+namespace blog\tests\components;
 
 use blog\components\PathReplacer\NS;
 use blog\components\PathReplacer\PathReplacer;
@@ -150,7 +150,7 @@ class PathReplacerTest extends Unit
         $replacer = new PathReplacer('/var/www',
             new NS('test', [
                 'output' => '{rootDir}/blog/tests/_output',
-                'components' => '{rootDir}/blog/tests/unit/components'
+                'components' => '{rootDir}/blog/tests/components'
             ])
         );
 

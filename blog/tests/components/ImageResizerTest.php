@@ -1,7 +1,7 @@
 <?php
 
 
-namespace blog\tests\unit\components;
+namespace blog\tests\components;
 
 
 use blog\components\ImageResizer\entities\Path;
