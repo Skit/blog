@@ -7,6 +7,7 @@ use blog\entities\post\PostBanners;
 
 return [
     [
+        'uuid' => 'f0d5b176-a8e3-40be-a78d-fc6bee14f2d6',
         'title' => 'bayer.hudson',
         'slug' => 'HP187Mvq7Mmm3CTU80dLkGmni_FUH_lR',
         'preview' => '$2y$13$EjaPFBnZOQsHdGuHI.xvhuDp1fHpo8hKRSk6yshqa9c5EG8s3C3lO',
@@ -20,6 +21,7 @@ return [
         'status' => Post::STATUS_ACTIVE,
     ],
     [
+        'uuid' => 'f1d5b176-a8e3-40be-a78d-fc6bee14f2d6',
         'title' => 'Highlighted post',
         'slug' => 'highlighted',
         'preview' => 'highlighted highlighted highlighted highlighted highlighted',

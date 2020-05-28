@@ -100,7 +100,13 @@ dmstr\web\AdminLteAsset::register($this);
                                         ]
                                     ); ?>
                                     <p>
-                                        username
+                                        <?php if (!Yii::$app->user->isGuest)
+                                        echo Html::beginForm(['/site/logout'], 'post'),
+                                            Html::submitButton(
+                                            'Logout (' . Yii::$app->user->identity->username . ')',
+                                            ['class' => 'btn btn-link logout']),
+                                            Html::endForm();
+                                        ?>
                                         <small>username@example.com</small>
                                     </p>
                                 </li>

@@ -37,10 +37,11 @@ class PostRepository extends AbstractRepository
     public function create(Post $post): ContentObjectInterface
     {
         $sql = "INSERT INTO `posts` VALUES 
-                           (NULL, :title, :slug, :preview, :content, :highlighted_content, :zip_content, :meta_data, :post_banners, :category_id, :creator_id, :created_at, :published_at, NULL, :is_highlight, :status, :count_view)";
+                           (NULL, :uuid, :title, :slug, :preview, :content, :highlighted_content, :zip_content, :meta_data, :post_banners, :category_id, :creator_id, :created_at, :published_at, NULL, :is_highlight, :status, :count_view)";
 
         $command = $this->dao
             ->createCommand($sql)
+            ->bindValue(':uuid', $post->getUuid(), PDO::PARAM_STR_CHAR)
             ->bindValue(':title', $post->getTitle(), PDO::PARAM_STR_CHAR)
             ->bindValue(':slug', $post->getSlug(), PDO::PARAM_STR_CHAR)
             ->bindValue(':content', $post->getContent(), PDO::PARAM_STR)
