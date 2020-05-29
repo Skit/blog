@@ -1,60 +1,165 @@
+Решил перейти на Laravel или Symphony, при этом блог нужен до, но работал я только с Yii.
+
+Идея такая: создать не завязанную на Yii структуру блога и перейти на другой фреймворк.
+
+Что сделано
+-----------
+```
+api
+    ...                     структура Yii
+    managers                посредник между контроллером и слоем данных
+    services                сервисы используются менеджерами
+    models                  содержит модели данных приходящих от клиента
+    tests                   тесты api методов
+backend
+    ...                     структура Yii
+    models                  содержит модели данных форм приходящих от клиента
+blog
+    components/          
+        highlighter         реализует подсветку синтаксиса для статей
+        ImageResizer        отвечает за ресайз изображений
+        PathReplacer        отвечает за пути блога
+        StringTranslator    переводит строки через онлайн сервисы или выполняет офлайн транслит
+        Relation            (пока в папке entities) конструирует запросы со связями
+    domain/                 содержит доменные сущности (пока все в папке entities)
+    entities/               немного всё в кучу, что-то нужно вынести в сервисы, часть в domain
+        test/               содержит unit тесты доменного слоя
+    managers/               менеджер-прослойка между контроллером и моделью
+    repositories/           слой работы с данными
+    services/               сервисы используются менеджерами
+    tests/                  содержит unit тесты слоя данных  
+```
+
+DI
+---
+```
+common/bootstrap/inject.php // Будет разделен для back, front и api
+```
+
+API
+---
+Фронт блога планируется реализовать на ReactJs.
+Начата реализация методов для манипуляции с изображениями при создании/редактировании статей
+
+```
+GET post-images     Возвращает список изображений добавленных в статью => [original, resized]
+POST post-images    Создает изображение для статьи => [original, resized, _links]
+DELETE post-images  Удаляет изображение статьи => [original, resized]
+```
+    
+Запуск тестов
+-------------
+```
+// Все тесты OK (86 tests, 356 assertions)
+vendor/bin/codecept run
+// по частям
+vendor/bin/codecept run -- -c api (нужно стартануть сервер из корня: php -S 127.0.0.1:8080 -t api/web)
+vendor/bin/codecept run -- -c backend
+vendor/bin/codecept run -- -c frontend
+vendor/bin/codecept run -- -c common
+    
+vendor/bin/codecept run -- -c blog
+// или по частям
+vendor/bin/codecept run -- -c blog unit
+vendor/bin/codecept run -- -c blog components
+```
+
+Таким образом, удалось добиться желаемого отделения логики блога от фреймворка, хотя многое еще предстоит доделать и зарефакторить.
+В коде добрая сотня тодошек, по всему что приходило в голову на месте. Фронт и бэк еще не готовы, всё работает в тестах.
+
+База данных
+-----------
+Для уменьшения количества выполняемых циклов и запрашиваемых методов 
+используются fetchObject который сразу возвращает требуемый объект
+и PDO::FETCH_FUNC для заполнения массивов объектами драйвером PDO.
+PDO сам заполняет объект данными. Реализовано заполнение связанных данных 
+```Post - post_tag - tags = Post->getTagsBundle()``` или 
+```Post - user - profile = Post->getCreator()->getProfile()->getAvatar()```
+
+У тэгов есть вес, который увеличивается/уменьшается триггером, после привязки/отвязки его к статье.
+
+```
+php console/yii migrations
+php console/yii_test migrations
+```
+
+Комментарии
+-----------
+Комментарии могут иметь вложенность (ответы), обход реализован через RecursiveIterator
+
+Коротко о компонентах
+---------------------
+
+PathTeplacer
+```
+Реализован с использованием строковых переменных. Для каждого приложения создается свой NameSpace. 
+Так, в админке блога или из api используется загрузка изображений в публичную папку фронта. 
+
+new PathReplacer('/var/www',
+                new NS('front', [
+                    'domain' => 'http://blog.loc',
+                    'nsRoot' => '{rootDir}/frontend',
+                    'public' => '{nsRoot}/web',
+                    'uploads' => "{public}/uploads",
+                    'postImage' => '{uploads}/posts/{year}/{postUuid}/images/{type}'
+                ]),
+                ...
+```
+
+ImageResizer
+```
+Осуществлена поддержка драйверов, используется единственный Imagick.
+
+marginalResize  - сперва максимально пропорционально ресайзит изображение,
+                  далее делает обрезку, чтобы попасть в заданные размеры. Для баннеров статей.
+strip           - оставляет только цветовой профиль изображения, иной раз, может облегчить изображение до 80%
+modulate        - цветовая коррекция изображения. По предполагаемому дизайну требуется небольшое "обесцвечивание"
+sharp           - делает картинку более читаемой после сжатия
+postProcessing  - выполняет некоторые преобразования. В целом, после сжатия, картинка практически не теряет в качестве.
+```
+
+StringTranslator
+```
+Отправляет текст в онлайн сервис перевода. Реализована работа через драйверы.
+Для тестирования, коннект вынесен в отдельный метод, который мокается
+
+Драйверы, сделаны просто по фану, но в то же время, можно добавить DynamicDriver и переключать их, 
+если один из сервисов уйдет в оффлайн или если потребуется переводить текст статей и найдется более качественный переводчик
+
+MyMemoryDriver
+YandexDriver
+OfflineDriver
+```
+
+StringTranslator
+```
+Пробрасывается в объект статьи. Если вдруг найдется более интересный подсветчик синтаксиса - ничего не сломается.
+В базе созданы поля: content, highlight_content, zip_content. Подсветка, сразу преобразует код в стили, записывается в
+отдельное поле, оригинальная статья архивируется и пакуется в blob поле. Клиенту показывается вариант с подсветкой (isHighlighted()),
+при редактировании происходит распаковка. Если код удален из статьи, остается заполненным только поле content.
+```
+
+Нужно было сперва сделать макет, чтобы наглядно видеть требуемый функционал.
+В итоге на днях набросал, но уже поздно - дописываю код.
+
+Набросок главной страницы в фигме
+-------------------
 <p align="center">
-    <a href="https://github.com/yiisoft" target="_blank">
-        <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
-    </a>
-    <h1 align="center">Yii 2 Advanced Project Template</h1>
-    <br>
+    <img src="https://radioswami.ru/images/blog_figma.png">
 </p>
 
-Yii 2 Advanced Project Template is a skeleton [Yii 2](http://www.yiiframework.com/) application best for
-developing complex Web applications with multiple tiers.
+Docker
+------
+Контейнеры в проекте стандартные. Кастомные, которые используются в разработке, пока не добавил.
 
-The template includes three tiers: front end, back end, and console, each of which
-is a separate Yii application.
+Stack
+-----
+PHP 7.4.2, NGINX 1.17.8, MySql 8.0. Контейнеры разруливаются через docker-compose и portainer
 
-The template is designed to work in a team development environment. It supports
-deploying the application in different environments.
+PHP 7.2
+-------
+К сожалению, приходится писать под 7.2 т.к. проплаченный хостинг, куда в ближайшее время планируется задеплоить блог, работает максимум на 7.2. 
+Но, после перехода на Amazon, код будет переписан, возможно уже на PHP 8
 
-Documentation is at [docs/guide/README.md](docs/guide/README.md).
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![Total Downloads](https://img.shields.io/packagist/dt/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![Build Status](https://travis-ci.com/yiisoft/yii2-app-advanced.svg?branch=master)](https://travis-ci.com/yiisoft/yii2-app-advanced)
 
-DIRECTORY STRUCTURE
--------------------
-
-```
-common
-    config/              contains shared configurations
-    mail/                contains view files for e-mails
-    models/              contains model classes used in both backend and frontend
-    tests/               contains tests for common classes    
-console
-    config/              contains console configurations
-    controllers/         contains console controllers (commands)
-    migrations/          contains database migrations
-    models/              contains console-specific model classes
-    runtime/             contains files generated during runtime
-backend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains backend configurations
-    controllers/         contains Web controller classes
-    models/              contains backend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for backend application    
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-frontend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains frontend configurations
-    controllers/         contains Web controller classes
-    models/              contains frontend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for frontend application
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-    widgets/             contains frontend widgets
-vendor/                  contains dependent 3rd-party packages
-environments/            contains environment-based overrides
-```
